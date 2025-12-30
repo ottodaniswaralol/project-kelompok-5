@@ -121,7 +121,7 @@ const FormPengajuan = ({ user, onSubmitData, onBack }) => {
     try {
       console.log(`Mengecek: Tanggal ${formData.date}, Ruangan ${formData.room}`);
 
-      const res = await fetch(`http://localhost/peminjaman_ruangan_backend/api/booking/check_availability.php?date=${formData.date}&room=${encodeURIComponent(formData.room)}`);
+      const res = await fetch(`https://project-kelompok-5-production.up.railway.app/api/booking/check_availability.php?date=${formData.date}&room=${encodeURIComponent(formData.room)}`);
       const json = await res.json();
       
       console.log("Hasil Cek:", json); // <--- CEK DISINI (F12)
@@ -341,7 +341,7 @@ const PeminjamanPage = ({ user, onBackToMenu, onToDashboard }) => {
       // Kalau user null (belum login), pakai 0 biar data kosong
       const userId = user?.id || user?.user_id || 0; 
       
-      const res = await fetch(`http://localhost/peminjaman_ruangan_backend/api/booking/list.php?user_id=${userId}`);
+      const res = await fetch(`https://project-kelompok-5-production.up.railway.app/api/booking/list.php?user_id=${userId}`);
       const data = await res.json();
       
       if (Array.isArray(data)) {
@@ -376,7 +376,7 @@ const PeminjamanPage = ({ user, onBackToMenu, onToDashboard }) => {
 
     try {
       const response = await fetch(
-        "http://localhost/peminjaman_ruangan_backend/api/booking/create.php",
+        const response = await fetch("https://project-kelompok-5-production.up.railway.app/api/booking/create.php",
         { method: "POST", body: fd }
       );
 
@@ -414,7 +414,7 @@ const PeminjamanPage = ({ user, onBackToMenu, onToDashboard }) => {
     if (!window.confirm(`Yakin ingin menghapus booking #${id}?`)) return;
 
     try {
-      const res = await fetch("http://localhost/peminjaman_ruangan_backend/api/booking/delete.php", {
+      cconst res = await fetch("https://project-kelompok-5-production.up.railway.app/api/booking/delete.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: id }) // Kirim ID
