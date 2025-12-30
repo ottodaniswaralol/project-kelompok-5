@@ -1,20 +1,16 @@
 <?php
-// 1. Izinkan akses dari mana saja (Origin Netlify lu)
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE");
+header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 
-// 2. TANGKAP REQUEST OPTIONS (PREFLIGHT)
-// Ini kunci buat benerin error 'No Access-Control-Allow-Origin header'
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
+// Pastikan jalur require bener (naik 2 kali ke root server)
+require_once '../../config/database.php';
 header("Content-Type: application/json");
-
-// 3. Hubungkan ke database (Arahkan ke folder config)
-require_once '../config/database.php';
 
 // 4. Ambil data JSON
 $data = json_decode(file_get_contents("php://input"), true);
