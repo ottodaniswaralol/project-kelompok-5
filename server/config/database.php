@@ -1,27 +1,16 @@
 <?php
-// Ambil data variabel dari Railway
-$conn = mysqli_connect(
-    getenv('MYSQLHOST'), 
-    getenv('MYSQLUSER'), 
-    getenv('MYSQLPASSWORD'), 
-    getenv('MYSQLDATABASE'), 
-    getenv('MYSQLPORT')
-);
+// Ambil variabel environment dari Railway
+$host = getenv('MYSQLHOST') ?: "localhost";
+$user = getenv('MYSQLUSER') ?: "root";
+$pass = getenv('MYSQLPASSWORD') ?: "";
+$db   = getenv('MYSQLDATABASE') ?: "room_booking";
+$port = getenv('MYSQLPORT') ?: "3306";
 
-// Jika host kosong (berarti lu lagi jalanin di laptop/XAMPP)
-if (!$host) {
-    $host = "localhost";
-    $user = "root";
-    $pass = "";
-    $db   = "room_booking";
-    $port = "3306";
-}
-
-// Koneksi ke database (Hanya panggil satu kali di sini)
+// Koneksi CUKUP SATU KALI
 $conn = mysqli_connect($host, $user, $pass, $db, $port);
 
-// Cek koneksi
 if (!$conn) {
-    die("Koneksi Database Gagal: " . mysqli_connect_error());
+    header("Content-Type: application/json");
+    die(json_encode(["status" => false, "message" => "Database Error: " . mysqli_connect_error()]));
 }
 ?>
