@@ -1,11 +1,17 @@
 <?php
-header("Access-Control-Allow-Origin: *"); // Pakai bintang dulu buat ngetes
-header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
+// 1. Matikan semua error reporting biar gak ngerusak output JSON
+error_reporting(0);
+ini_set('display_errors', 0);
+
+// 2. Header CORS WAJIB ADA (Pake bintang biar gak ribet dulu)
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 
+// 3. Handle Preflight Request (Ini yang bikin error di log lu)
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     http_response_code(200);
-    exit;
+    exit();
 }
 
 // ... Baris koneksi database dan logika login lu di sini ...

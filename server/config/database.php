@@ -1,28 +1,24 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-header("Content-Type: application/json; charset=UTF-8");
+// 1. Ambil data dari Railway
+$host = getenv('MYSQLHOST'); 
+$user = getenv('MYSQLUSER');
+$pass = getenv('MYSQLPASSWORD');
+$db   = getenv('MYSQLDATABASE');
+$port = getenv('MYSQLPORT');
 
-// Handle preflight request
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit;
+// 2. Kalau di lokal (XAMPP), variabel di atas pasti kosong, maka pake ini:
+if (!$host) {
+    $host = "localhost";
+    $user = "root";
+    $pass = "";
+    $db   = "room_booking";
+    $port = "3306";
 }
 
-$host = "localhost";
-$user = "root";
-$pass = "";
-$db   = "room_booking";
+// 3. CUKUP SATU KALI SAJA MANGGIL mysqli_connect
+$conn = mysqli_connect($host, $user, $pass, $db, $port);
 
-$conn = new mysqli($host, $user, $pass, $db);
-
-if ($conn->connect_error) {
-    http_response_code(500);
-    echo json_encode([
-        "status" => false,
-        "message" => "Database connection failed"
-    ]);
-    exit;
+if (!$conn) {
+    die("Koneksi Database Gagal: " . mysqli_connect_error());
 }
 ?>
