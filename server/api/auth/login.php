@@ -1,11 +1,8 @@
 <?php
-// Izinkan domain Netlify lu buat ngakses API ini
-header("Access-Control-Allow-Origin: https://project-kelompok-5.netlify.app");
+header("Access-Control-Allow-Origin: *"); // Pakai bintang dulu buat ngetes
 header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
-header("Access-Control-Allow-Credentials: true");
 
-// Browser bakal kirim request 'OPTIONS' dulu buat nanya izin, jawab 200 OK
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     http_response_code(200);
     exit;

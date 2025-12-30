@@ -1,6 +1,6 @@
 // src/services/api.js
 
-const BASE_URL = "https://project-kelompok-5-production.up.railway.app/api";
+const BASE_URL = "https://project-kelompok-5-production.up.railway.app/server/api/auth/login.php";
 
 // LOGIN
 export async function login(username, password) {
