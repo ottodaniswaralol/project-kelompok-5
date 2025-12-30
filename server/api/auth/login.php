@@ -1,24 +1,22 @@
 <?php
-// 1. Matikan error reporting biar gak ngerusak output JSON
-error_reporting(0);
-ini_set('display_errors', 0);
-
-// 2. Header CORS & JSON
+// 1. Izinkan akses dari mana saja (Origin Netlify lu)
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
-header("Content-Type: application/json");
 
-// 3. Handle Preflight Request
+// 2. TANGKAP REQUEST OPTIONS (PREFLIGHT)
+// Ini kunci buat benerin error 'No Access-Control-Allow-Origin header'
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
-// 4. Hubungkan ke database (Arahkan ke folder config)
+header("Content-Type: application/json");
+
+// 3. Hubungkan ke database (Arahkan ke folder config)
 require_once '../config/database.php';
 
-// 5. Ambil data JSON
+// 4. Ambil data JSON
 $data = json_decode(file_get_contents("php://input"), true);
 $username = $data['username'] ?? '';
 $password = $data['password'] ?? '';
@@ -28,7 +26,7 @@ if (empty($username) || empty($password)) {
     exit;
 }
 
-// 6. Query User (Gunakan $conn dari database.php)
+// 5. Query User (Gunakan $conn dari database.php)
 $stmt = $conn->prepare("SELECT * FROM users WHERE username = ? OR name = ?");
 $stmt->bind_param("ss", $username, $username);
 $stmt->execute();
@@ -41,13 +39,13 @@ if ($result->num_rows === 0) {
 
 $user = $result->fetch_assoc();
 
-// 7. Verifikasi Password
+// 6. Verifikasi Password
 if (!password_verify($password, $user['password'])) {
     echo json_encode(["status" => false, "message" => "Password salah"]);
     exit;
 }
 
-// 8. Berhasil
+// 7. Berhasil
 echo json_encode([
     "status" => true, 
     "user" => [
