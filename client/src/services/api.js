@@ -1,7 +1,7 @@
 // src/services/api.js
 
 // 1. BASE_URL cukup sampai folder 'server' atau 'api' saja
-const BASE_URL = "https://project-kelompok-5-production.up.railway.app/api/";
+const BASE_URL = "https://project-kelompok-5-production.up.railway.app/api";
 
 // LOGIN
 export async function login(username, password) {
