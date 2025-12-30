@@ -1,10 +1,12 @@
 <?php
 // Ambil data variabel dari Railway
-$host = getenv('MYSQLHOST'); 
-$user = getenv('MYSQLUSER');
-$pass = getenv('MYSQLPASSWORD');
-$db   = getenv('MYSQLDATABASE');
-$port = getenv('MYSQLPORT');
+$conn = mysqli_connect(
+    getenv('MYSQLHOST'), 
+    getenv('MYSQLUSER'), 
+    getenv('MYSQLPASSWORD'), 
+    getenv('MYSQLDATABASE'), 
+    getenv('MYSQLPORT')
+);
 
 // Jika host kosong (berarti lu lagi jalanin di laptop/XAMPP)
 if (!$host) {

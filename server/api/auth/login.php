@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 }
 
 // 4. Hubungkan ke database (Arahkan ke folder config)
-require_once '../../config/database.php';
+require_once '../config/database.php';
 
 // 5. Ambil data JSON
 $data = json_decode(file_get_contents("php://input"), true);

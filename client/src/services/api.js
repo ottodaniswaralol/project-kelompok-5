@@ -1,12 +1,12 @@
 // src/services/api.js
 
 // 1. BASE_URL cukup sampai folder 'server' atau 'api' saja
-const BASE_URL = "https://project-kelompok-5-production.up.railway.app/server/api/auth/login.php";
+const BASE_URL = "https://project-kelompok-5-production.up.railway.app/api/auth";
 
 // LOGIN
 export async function login(username, password) {
   // 2. Di sini baru lu sambungin ke path filenya yang bener
-  const response = await fetch(`${BASE_URL}/api/auth/login.php`, {
+  const response = await fetch(`${BASE_URL}/login.php`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
