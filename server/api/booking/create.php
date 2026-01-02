@@ -1,32 +1,53 @@
 <?php
+// 1. Panggil CORS paling atas agar ijin akses terkirim sebelum logic lain jalan
 require_once '../auth/cors.php'; 
 require_once '../../config/database.php';
 
 header("Content-Type: application/json; charset=UTF-8");
 
 try {
-    $data = json_decode(file_get_contents("php://input"), true); // Baca JSON
+    // 2. Baca data format JSON dari React
+    $data = json_decode(file_get_contents("php://input"), true);
     
     $user_id = $data['user_id'] ?? 1;
     $event_name = $data['event_name'] ?? '';
     $org = $data['organization'] ?? '';
-    $rooms_json = json_encode($data['rooms'] ?? []); // Simpan array room sebagai JSON
+    $pic = $data['pic'] ?? ''; // Tambahkan ini
+    $phone = $data['phone'] ?? ''; // Tambahkan ini
+    $desc = $data['event_description'] ?? ''; // Tambahkan ini
+    $start_datetime = $data['start_datetime'] ?? '';
+    $end_datetime = $data['end_datetime'] ?? '';
+    
+    // Pastikan rooms di-encode jadi string JSON untuk masuk ke satu kolom
+    $rooms_json = json_encode($data['rooms'] ?? []); 
 
     $conn->begin_transaction();
 
-    $sql1 = "INSERT INTO booking (user_id, event_name, organization, rooms, start_datetime, end_datetime) VALUES (?, ?, ?, ?, ?, ?)";
+    // 3. Query Insert Lengkap (Sesuaikan dengan jumlah kolom di tabel booking lu)
+    $sql1 = "INSERT INTO booking (user_id, event_name, organization, pic, phone, event_description, start_datetime, end_datetime, rooms) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    
     $stmt1 = $conn->prepare($sql1);
-    $stmt1->bind_param("isssss", $user_id, $event_name, $org, $rooms_json, $data['start_datetime'], $data['end_datetime']);
-    $stmt1->execute();
+    // Bind 9 parameter (i = integer, s = string)
+    $stmt1->bind_param("issssssss", $user_id, $event_name, $org, $pic, $phone, $desc, $start_datetime, $end_datetime, $rooms_json);
+    
+    if (!$stmt1->execute()) throw new Exception("Gagal insert booking: " . $stmt1->error);
     
     $new_id = $conn->insert_id;
-    $conn->query("INSERT INTO booking_approval (booking_id, step, status) VALUES ($new_id, 'baa', 'pending')");
+
+    // 4. Input status awal ke tabel approval
+    $sql2 = "INSERT INTO booking_approval (booking_id, step, status) VALUES (?, 'baa', 'pending')";
+    $stmt2 = $conn->prepare($sql2);
+    $stmt2->bind_param("i", $new_id);
+    
+    if (!$stmt2->execute()) throw new Exception("Gagal insert approval");
 
     $conn->commit();
-    echo json_encode(["status" => "success", "id" => $new_id]);
+    echo json_encode(["status" => "success", "message" => "Booking Berhasil!", "id" => $new_id]);
 
 } catch (Exception $e) {
-    $conn->rollback();
+    if (isset($conn)) $conn->rollback();
+    http_response_code(500);
     echo json_encode(["status" => "error", "message" => $e->getMessage()]);
 }
 ?>
