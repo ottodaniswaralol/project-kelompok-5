@@ -1,47 +1,50 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+// 1. Panggil CORS paling atas 
+require_once 'cors.php'; 
 
-if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
-
-// Pastikan jalur require bener (naik 2 kali ke root server)
+// 2. Koneksi Database (Naik 2 tingkat ke folder config)
 require_once '../../config/database.php';
+
 header("Content-Type: application/json");
 
-// 4. Ambil data JSON
+// Ambil data JSON dari body request
 $data = json_decode(file_get_contents("php://input"), true);
 $username = $data['username'] ?? '';
 $password = $data['password'] ?? '';
 
 if (empty($username) || empty($password)) {
-    echo json_encode(["status" => false, "message" => "Username dan password wajib diisi"]);
+    echo json_encode(["status" => false, "message" => "Username & password wajib diisi"]);
     exit;
 }
 
-// 5. Query User (Gunakan $conn dari database.php)
+// Query User (Gunakan $conn dari database.php)
 $stmt = $conn->prepare("SELECT * FROM users WHERE username = ? OR name = ?");
 $stmt->bind_param("ss", $username, $username);
 $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows === 0) {
-    echo json_encode(["status" => false, "message" => "Username tidak ditemukan"]);
+    echo json_encode(["status" => false, "message" => "User tidak ditemukan"]);
     exit;
 }
 
 $user = $result->fetch_assoc();
 
-// 6. Verifikasi Password
+/**
+ * PENTING: Jika password di database masih tulisan biasa (bukan hash),
+ * ganti password_verify() menjadi: if ($password !== $user['password'])
+ */
 if (!password_verify($password, $user['password'])) {
-    echo json_encode(["status" => false, "message" => "Password salah"]);
-    exit;
+    // Jika gagal login karena plain text, coba bandingkan langsung (Hanya untuk debug!)
+    if ($password === $user['password']) {
+        // Lanjut proses jika cocok manual
+    } else {
+        echo json_encode(["status" => false, "message" => "Password salah"]);
+        exit;
+    }
 }
 
-// 7. Berhasil
+// Berhasil login
 echo json_encode([
     "status" => true, 
     "user" => [

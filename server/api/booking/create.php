@@ -1,52 +1,44 @@
 <?php
-// MATIKAN ERROR HTML BIAR JSON BERSIH
-ini_set('display_errors', 0);
-header("Access-Control-Allow-Origin: *");
+// 1. Ganti header manual dengan cors.php
+require_once '../auth/cors.php'; 
+require_once '../../config/database.php';
+
 header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: POST, OPTIONS");
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
-
-include_once '../../config/database.php';
 
 try {
-    // 1. Ambil Data Frontend
-    $user_id = $_POST['user_id'] ?? 1;
-    $event_name = $_POST['event_name'] ?? '';
-    $org = $_POST['organization'] ?? '';
-    $pic = $_POST['pic'] ?? '';
-    $phone = $_POST['phone'] ?? '';
-    $desc = $_POST['event_description'] ?? '';
-    $start_datetime = $_POST['start_datetime'] ?? '';
-    $end_datetime = $_POST['end_datetime'] ?? '';
-    $rooms_json = $_POST['rooms'] ?? '[]';
+    // 2. Ambil Data format JSON (Bukan $_POST)
+    $data = json_decode(file_get_contents("php://input"), true);
+    
+    $user_id = $data['user_id'] ?? 1;
+    $event_name = $data['event_name'] ?? '';
+    $org = $data['organization'] ?? '';
+    $pic = $data['pic'] ?? '';
+    $phone = $data['phone'] ?? '';
+    $desc = $data['event_description'] ?? '';
+    $start_datetime = $data['start_datetime'] ?? '';
+    $end_datetime = $data['end_datetime'] ?? '';
+    $rooms_json = json_encode($data['rooms'] ?? []); // Pastikan jadi string JSON buat DB
 
-    // 2. Mulai Transaksi (Wajib karena isi 2 tabel)
     $conn->begin_transaction();
 
-    // A. INSERT KE TABEL BOOKING (Data Kegiatan)
-    // Perhatikan: Kita TIDAK insert status disini, karena status ada di tabel sebelah
     $sql1 = "INSERT INTO booking (user_id, event_name, organization, pic, phone, event_description, start_datetime, end_datetime, rooms) 
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     
     $stmt1 = $conn->prepare($sql1);
     $stmt1->bind_param("issssssss", $user_id, $event_name, $org, $pic, $phone, $desc, $start_datetime, $end_datetime, $rooms_json);
     
-    if (!$stmt1->execute()) throw new Exception("Gagal insert booking: " . $stmt1->error);
+    if (!$stmt1->execute()) throw new Exception("Gagal insert booking");
     
-    $new_booking_id = $conn->insert_id; // Ambil ID baru
+    $new_booking_id = $conn->insert_id;
 
-    // B. INSERT KE TABEL BOOKING_APPROVAL (Status Awal)
-    // Kita set step='baa' dan status='pending' (Menunggu)
     $sql2 = "INSERT INTO booking_approval (booking_id, step, status) VALUES (?, 'baa', 'pending')";
     $stmt2 = $conn->prepare($sql2);
     $stmt2->bind_param("i", $new_booking_id);
     
-    if (!$stmt2->execute()) throw new Exception("Gagal insert approval: " . $stmt2->error);
+    if (!$stmt2->execute()) throw new Exception("Gagal insert approval");
 
-    // Sukses -> Commit
     $conn->commit();
-    echo json_encode(["status" => "success", "message" => "Berhasil Disimpan!", "id" => $new_booking_id]);
+    echo json_encode(["status" => "success", "id" => $new_booking_id]);
 
 } catch (Exception $e) {
     $conn->rollback();
