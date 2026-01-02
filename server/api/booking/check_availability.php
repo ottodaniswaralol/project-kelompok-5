@@ -1,21 +1,17 @@
 <?php
-ini_set('display_errors', 0);
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: GET");
+require_once '../auth/cors.php'; // Pakai file pusat
+require_once '../../config/database.php';
 
-include_once '../../config/database.php';
+header("Content-Type: application/json; charset=UTF-8");
 
 try {
-    if (!isset($conn)) throw new Exception("DB Error");
-
     $date = $_GET['date'] ?? '';
     $roomRequested = $_GET['room'] ?? '';
 
     if (empty($date) || empty($roomRequested)) throw new Exception("Data kurang");
 
-    // PERBAIKAN: Pakai 'booking_id' (bukan id)
-    $query = "SELECT booking_id, rooms FROM booking 
+    // Query cek jadwal yang tidak ditolak/batal
+    $query = "SELECT rooms FROM booking 
               WHERE DATE(start_datetime) = ? 
               AND status NOT IN ('Ditolak', 'Batal', 'Rejected')";
 
@@ -25,13 +21,10 @@ try {
     $result = $stmt->get_result();
 
     $isBooked = false;
-
     while ($row = $result->fetch_assoc()) {
-        // Decode JSON rooms
         $bookedRoomsArray = json_decode($row['rooms'], true);
         if (!is_array($bookedRoomsArray)) $bookedRoomsArray = [$row['rooms']];
 
-        // Cek bentrok text
         foreach ($bookedRoomsArray as $bookedRoom) {
             if (trim($bookedRoom) === trim($roomRequested)) {
                 $isBooked = true;
@@ -40,11 +33,10 @@ try {
         }
     }
 
-    if ($isBooked) {
-        echo json_encode(["status" => "booked", "message" => "Penuh"]);
-    } else {
-        echo json_encode(["status" => "available", "message" => "Aman"]);
-    }
+    echo json_encode([
+        "status" => $isBooked ? "booked" : "available",
+        "message" => $isBooked ? "Ruangan sudah terisi" : "Ruangan tersedia"
+    ]);
 
 } catch (Exception $e) {
     echo json_encode(["status" => "error", "message" => $e->getMessage()]);

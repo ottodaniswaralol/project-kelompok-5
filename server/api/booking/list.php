@@ -1,16 +1,25 @@
 <?php
-ini_set('display_errors', 0);
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: GET");
+// 1. Panggil CORS paling atas agar ijin akses terkirim
+require_once '../auth/cors.php'; 
 
-include_once '../../config/database.php';
+// 2. Matikan display error agar tidak merusak format JSON
+ini_set('display_errors', 0);
+
+// 3. Koneksi Database
+require_once '../../config/database.php';
+
+header("Content-Type: application/json; charset=UTF-8");
 
 try {
+    // Ambil user_id dari URL (contoh: list.php?user_id=5)
     $user_id = $_GET['user_id'] ?? 0;
 
-    // QUERY SAKTI:
-    // Ambil semua dari booking, TAPI ambil status dari booking_approval yg paling baru
+    if ($user_id == 0) {
+        echo json_encode([]);
+        exit;
+    }
+
+    // QUERY SAKTI: Ambil data booking + status terbaru dari tabel approval
     $query = "
         SELECT 
             b.*,
@@ -33,18 +42,19 @@ try {
     $data = [];
     while ($row = $result->fetch_assoc()) {
         
-        // Rapikan JSON Room
+        // Rapikan JSON Room (Karena di DB disimpan sebagai string JSON)
         $roomRaw = $row['rooms'];
-        $jsonRoom = json_decode($roomRaw);
+        $jsonRoom = json_decode($roomRaw, true);
         $roomClean = is_array($jsonRoom) ? implode(", ", $jsonRoom) : $roomRaw;
 
-        // Rapikan Status
+        // Rapikan Status ke Bahasa Indonesia untuk UI Frontend
         $statusIndo = 'Menunggu';
         if ($row['real_status'] == 'approved') $statusIndo = 'Disetujui';
         if ($row['real_status'] == 'rejected') $statusIndo = 'Ditolak';
 
+        // Format data agar sesuai dengan kebutuhan state di React
         $data[] = [
-            "id" => $row['booking_id'], // Frontend React butuh key bernama "id"
+            "id" => $row['booking_id'], 
             "event" => $row['event_name'],
             "org" => $row['organization'],
             "date" => date('d-m-Y', strtotime($row['start_datetime'])),
