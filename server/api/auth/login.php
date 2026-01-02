@@ -1,6 +1,6 @@
 <?php
 // 1. Panggil CORS paling atas 
-require_once 'cors.php'; 
+require_once '../../../cors.php'; 
 
 // 2. Koneksi Database (Naik 2 tingkat ke folder config)
 require_once '../../config/database.php';
