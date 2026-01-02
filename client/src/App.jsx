@@ -375,8 +375,7 @@ const PeminjamanPage = ({ user, onBackToMenu, onToDashboard }) => {
     fd.append("inventory", JSON.stringify([]));
 
     try {
-      const response = await fetch(
-        const response = await fetch("https://project-kelompok-5-production.up.railway.app/api/booking/create.php",
+      const response = await fetch("https://project-kelompok-5-production.up.railway.app/api/booking/create.php",
         { method: "POST", body: fd }
       );
 
@@ -414,7 +413,7 @@ const PeminjamanPage = ({ user, onBackToMenu, onToDashboard }) => {
     if (!window.confirm(`Yakin ingin menghapus booking #${id}?`)) return;
 
     try {
-      cconst res = await fetch("https://project-kelompok-5-production.up.railway.app/api/booking/delete.php", {
+      const res = await fetch("https://project-kelompok-5-production.up.railway.app/api/booking/delete.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: id }) // Kirim ID
