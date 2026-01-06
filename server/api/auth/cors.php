@@ -4,7 +4,7 @@ $allowedOrigin = 'https://project-kelompok-5.netlify.app';
 
 // Set other CORS headers
 header("Access-Control-Allow-Origin: $allowedOrigin");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS"); // Allow necessary methods
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS"); // Allow necessary methods
 header("Access-Control-Allow-Headers: Content-Type, Authorization"); // Allow necessary headers
 header("Access-Control-Allow-Credentials: true"); // If you're using cookies/credentials
 
