@@ -1,91 +1,74 @@
 <?php
-// 1. CORS HARDCODE (Wajib!)
+// 1. CORS Header
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+header("Access-Control-Allow-Methods: POST, GET, OPTIONS"); // Support POST/GET
+header("Access-Control-Allow-Headers: Content-Type");
 
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
-// 2. MATIKAN ERROR DISPLAY (PENTING BANGET!)
-// Supaya warning PHP gak ngerusak format JSON
+// 2. Matikan Error Text PHP (PENTING!)
 ini_set('display_errors', 0);
 error_reporting(0);
 
-header("Content-Type: application/json; charset=UTF-8");
-
+header("Content-Type: application/json");
 require_once '../../config/database.php';
 
 try {
-    // 3. Validasi Koneksi
-    if (!isset($conn) || $conn->connect_error) {
-        throw new Exception("Gagal koneksi database");
+    // 3. Tangkap Input (Bisa dari POST JSON atau GET URL)
+    $inputJSON = json_decode(file_get_contents("php://input"), true);
+    
+    // Support input dari JSON Body atau URL Parameter
+    $room   = $inputJSON['room'] ?? $_GET['room'] ?? '';
+    $date   = $inputJSON['date'] ?? $_GET['date'] ?? '';     // Format: YYYY-MM-DD
+    $start  = $inputJSON['start'] ?? $_GET['start'] ?? '';   // Format: HH:mm
+    $end    = $inputJSON['end'] ?? $_GET['end'] ?? '';       // Format: HH:mm
+
+    // Validasi Kelengkapan
+    if (empty($room) || empty($date) || empty($start) || empty($end)) {
+        throw new Exception("Mohon lengkapi Ruangan, Tanggal, Jam Mulai, dan Selesai.");
     }
 
-    // 4. Ambil Input
-    $date = $_GET['date'] ?? '';
-    $roomRequested = $_GET['room'] ?? '';
+    // Gabungkan Tanggal + Jam
+    $reqStart = date('Y-m-d H:i:s', strtotime("$date $start"));
+    $reqEnd   = date('Y-m-d H:i:s', strtotime("$date $end"));
 
-    if (empty($date) || empty($roomRequested)) {
-        echo json_encode(["status" => "error", "message" => "Pilih tanggal dan ruangan dulu!"]);
-        exit;
-    }
-
-    // 5. Query Cek Bentrok
-    // Ambil semua booking di tanggal itu, KECUALI yang sudah ditolak/batal
+    // 4. Query Cek Bentrok (Anti SQL Injection)
+    // Logika: Cari booking lain yang waktunya tumpang tindih
+    // DAN statusnya BUKAN 'rejected' atau 'cancelled'
     $query = "
-        SELECT b.rooms, ba.status 
+        SELECT b.booking_id, b.start_datetime, b.end_datetime, ba.status 
         FROM booking b
         LEFT JOIN booking_approval ba ON b.booking_id = ba.booking_id
-        WHERE DATE(b.start_datetime) = ? 
+        WHERE 
+            b.rooms LIKE ? 
+            AND (
+                (b.start_datetime < ? AND b.end_datetime > ?) -- Logika Overlap
+            )
+            AND (ba.status IS NULL OR ba.status NOT IN ('rejected', 'cancelled', 'ditolak'))
+        LIMIT 1
     ";
 
     $stmt = $conn->prepare($query);
-    $stmt->bind_param("s", $date);
+    $roomPattern = "%\"$room\"%"; // Mencari string room di dalam JSON/Array DB
+    $stmt->bind_param("sss", $roomPattern, $reqEnd, $reqStart);
     $stmt->execute();
     $result = $stmt->get_result();
+    
+    $conflict = $result->fetch_assoc();
 
-    $isBooked = false;
-    $statusConflict = "";
-
-    while ($row = $result->fetch_assoc()) {
-        // Normalisasi status (handle jika NULL -> 'pending')
-        $statusRaw = $row['status'] ?? 'pending';
-        $status = strtolower($statusRaw);
-
-        // Jika status Rejected/Cancelled, ruangan dianggap KOSONG (lanjut loop)
-        if (in_array($status, ['rejected', 'cancelled', 'ditolak', 'batal'])) {
-            continue;
-        }
-
-        // Cek Ruangan dalam JSON
-        // Database mungkin simpan: "R1" (string) atau ["R1", "R2"] (array JSON)
-        $roomsDB = $row['rooms'];
-        $bookedRoomsArray = json_decode($roomsDB, true);
-
-        // Fallback jika gagal decode atau bukan array (misal data lama cuma string)
-        if (!is_array($bookedRoomsArray)) {
-            $bookedRoomsArray = [$roomsDB];
-        }
-
-        // Cek bentrok
-        if (in_array($roomRequested, $bookedRoomsArray)) {
-            $isBooked = true;
-            $statusConflict = $statusRaw; // Simpan status booking yang bikin bentrok
-            break; // Udah ketemu bentrok, stop looping
-        }
-    }
-
-    // 6. Response Final
-    if ($isBooked) {
+    // 5. Kirim Response JSON (Bukan Text!)
+    if ($conflict) {
+        // Ada bentrok
         echo json_encode([
-            "status" => "success", // Request berhasil diproses
-            "available" => false,  // TAPI ruangan tidak tersedia
-            "message" => "Yah, ruangan penuh! (Status booking lain: $statusConflict)"
+            "status" => "success",
+            "available" => false,
+            "message" => "Yah, ruangan sudah terisi di jam segitu!"
         ]);
     } else {
+        // Kosong (Aman)
         echo json_encode([
             "status" => "success",
             "available" => true,
@@ -94,8 +77,12 @@ try {
     }
 
 } catch (Exception $e) {
-    // Kalau ada error fatal, kirim JSON error
-    http_response_code(500);
-    echo json_encode(["status" => "error", "message" => "Server Error: " . $e->getMessage()]);
+    // Error Server / Input
+    http_response_code(200); // Tetap 200 biar frontend bisa baca message errornya
+    echo json_encode([
+        "status" => "error",
+        "available" => false,
+        "message" => $e->getMessage()
+    ]);
 }
 ?>
