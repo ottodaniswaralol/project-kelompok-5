@@ -1,4 +1,5 @@
 <?php
+// === HEADER CORS (Sudah Benar) ===
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
@@ -7,9 +8,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     http_response_code(200);
     exit();
 }
-require_once '../../config/database.php';
+
+// === DEBUGGING (Agar Error terlihat di Logs Railway) ===
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 
 header("Content-Type: application/json; charset=UTF-8");
+
+// === CEK FILE DATABASE SEBELUM REQUIRE ===
+$db_file = '../../config/database.php';
+
+if (!file_exists($db_file)) {
+    http_response_code(500);
+    // Ini akan memberitahu kita jika path-nya salah
+    echo json_encode(["status" => "error", "message" => "File database tidak ditemukan di: " . realpath('../../config/')]);
+    exit();
+}
+
+require_once $db_file;
+
+// === CEK KONEKSI ===
+if (!isset($conn) || !$conn) {
+    http_response_code(500);
+    echo json_encode(["status" => "error", "message" => "Koneksi database gagal (variabel \$conn tidak ada)"]);
+    exit();
+}
 
 try {
     // 2. Baca data format JSON dari React
