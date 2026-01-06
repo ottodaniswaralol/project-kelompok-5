@@ -10,7 +10,7 @@ header("Access-Control-Allow-Credentials: true"); // If you're using cookies/cre
 
 // Handle preflight OPTIONS request
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    http_response_code(200); // Respond with 200 OK for preflight
+    http_response_code(204); // Respond with 200 OK for preflight
     exit();
 }
 ?>
