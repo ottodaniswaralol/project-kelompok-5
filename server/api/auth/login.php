@@ -1,18 +1,30 @@
 <?php
 // ==========================================
-// 1. BAGIAN CORS (WAJIB PALING ATAS)
+// FUNGSI: FORCE CORS
 // ==========================================
+function caddy_cors() {
+    // 1. Cek Origin (Boleh dari mana aja, atau spesifik Netlify lu)
+    if (isset($_SERVER['HTTP_ORIGIN'])) {
+        header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
+        header('Access-Control-Allow-Credentials: true');
+        header('Access-Control-Max-Age: 86400'); // Cache seharian
+    }
 
-// Izinkan semua domain (Gunakan ini dulu biar tidak pusing saat dev)
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+    // 2. Kalau browser kirim Preflight (OPTIONS), langsung jawab OK & MATIKAN PHP
+    if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+        if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']))
+            header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");         
 
-// Tangani Preflight Request (Browser Cek Ombak)
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit; // Stop di sini, jangan lanjut ke bawah
+        if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']))
+            header("Access-Control-Allow-Headers: {$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");
+
+        http_response_code(200);
+        exit(0); // PENTING: Matikan proses di sini!
+    }
 }
+
+// Panggil fungsinya
+caddy_cors();
 
 // ==========================================
 // 2. BAGIAN LOGIC LOGIN
