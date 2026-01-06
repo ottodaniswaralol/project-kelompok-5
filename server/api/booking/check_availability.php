@@ -1,6 +1,16 @@
 <?php
-require_once '../auth/cors.php'; // Baris 1
-require_once '../../config/database.php'; // Baris 2
+// 1. CORS HARDCODE
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+// 2. Koneksi Database
+require_once '../../config/database.php'; 
 
 header("Content-Type: application/json; charset=UTF-8");
 
@@ -12,6 +22,7 @@ if (empty($date) || empty($roomRequested)) {
     exit;
 }
 
+// Cek booking yang statusnya BUKAN Ditolak/Batal
 $query = "SELECT rooms FROM booking WHERE DATE(start_datetime) = ? AND status NOT IN ('Ditolak', 'Batal', 'Rejected')";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("s", $date);

@@ -1,6 +1,23 @@
 <?php
-require_once '../auth/cors.php'; // Keluar ke api/, masuk ke auth/
-require_once '../../config/database.php'; // Keluar ke api/, keluar ke server/, masuk ke config/
+// ==========================================
+// 1. HEADER CORS "PAKSA" (Wajib di Paling Atas)
+// ==========================================
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+
+// Matikan Preflight Request
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+// ==========================================
+// 2. KONEKSI & LOGIC
+// ==========================================
+
+// Sesuaikan path ini jika perlu (keluar api/ -> keluar server/ -> masuk config/)
+require_once '../../config/database.php';
 
 header('Content-Type: application/json');
 

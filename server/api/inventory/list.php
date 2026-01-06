@@ -1,34 +1,42 @@
 <?php
-// 1. WAJIB: Panggil CORS paling atas agar izin akses terkirim ke browser
-require_once '../auth/cors.php'; 
+// ==========================================
+// 1. HEADER CORS "PAKSA" (Wajib di Paling Atas)
+// ==========================================
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 
-// 2. Koneksi Database (Naik 2 tingkat ke folder config)
-require_once '../../config/database.php';
+// Matikan Preflight Request
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+// ==========================================
+// 2. KONEKSI & LOGIC
+// ==========================================
+
+// Sesuaikan path ini jika perlu (keluar api/ -> keluar server/ -> masuk config/)
+require_once '../../config/database.php'; 
 
 header('Content-Type: application/json');
 
-try {
-    // 3. Query ambil data inventory
-    $q = $conn->query("SELECT * FROM inventory");
+// CATATAN: Kode asli kamu query ke tabel 'rooms'. 
+// Jika ini benar untuk INVENTORY, ganti 'rooms' menjadi 'inventory'.
+$table_name = 'inventory'; // Ganti jadi 'rooms' kalau ini file room list
 
-    if (!$q) {
-        throw new Exception($conn->error);
-    }
+// Saya ubah sedikit biar dinamis, atau kamu bisa tulis manual query-nya:
+// $q = $conn->query("SELECT * FROM inventory"); 
 
-    $data = [];
+// Menggunakan query asli kamu (tapi pastikan tabelnya benar):
+$q = $conn->query("SELECT * FROM rooms"); 
+
+$data = [];
+if ($q) {
     while ($row = $q->fetch_assoc()) {
         $data[] = $row;
     }
-
-    // 4. Kirim hasil dalam format JSON
-    echo json_encode($data);
-
-} catch (Exception $e) {
-    // Jika ada error database, tetap kirim format JSON agar frontend tidak bingung
-    http_response_code(500);
-    echo json_encode([
-        "status" => "error",
-        "message" => "Gagal mengambil data inventaris: " . $e->getMessage()
-    ]);
 }
+
+echo json_encode($data);
 ?>

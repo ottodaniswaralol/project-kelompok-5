@@ -1,8 +1,15 @@
 <?php
-// 1. Panggil CORS paling atas agar ijin akses terkirim
-require_once '../auth/cors.php'; 
+// 1. CORS HARDCODE
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 
-// 2. Matikan display error agar tidak merusak format JSON
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+// 2. Matikan display error agar JSON bersih
 ini_set('display_errors', 0);
 
 // 3. Koneksi Database
@@ -11,7 +18,7 @@ require_once '../../config/database.php';
 header("Content-Type: application/json; charset=UTF-8");
 
 try {
-    // Ambil user_id dari URL (contoh: list.php?user_id=5)
+    // Ambil user_id
     $user_id = $_GET['user_id'] ?? 0;
 
     if ($user_id == 0) {
@@ -19,7 +26,7 @@ try {
         exit;
     }
 
-    // QUERY SAKTI: Ambil data booking + status terbaru dari tabel approval
+    // Query Booking + Status Approval Terakhir
     $query = "
         SELECT 
             b.*,
@@ -42,17 +49,16 @@ try {
     $data = [];
     while ($row = $result->fetch_assoc()) {
         
-        // Rapikan JSON Room (Karena di DB disimpan sebagai string JSON)
+        // Rapikan JSON Room
         $roomRaw = $row['rooms'];
         $jsonRoom = json_decode($roomRaw, true);
         $roomClean = is_array($jsonRoom) ? implode(", ", $jsonRoom) : $roomRaw;
 
-        // Rapikan Status ke Bahasa Indonesia untuk UI Frontend
+        // Rapikan Status
         $statusIndo = 'Menunggu';
         if ($row['real_status'] == 'approved') $statusIndo = 'Disetujui';
         if ($row['real_status'] == 'rejected') $statusIndo = 'Ditolak';
 
-        // Format data agar sesuai dengan kebutuhan state di React
         $data[] = [
             "id" => $row['booking_id'], 
             "event" => $row['event_name'],

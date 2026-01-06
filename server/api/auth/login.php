@@ -1,30 +1,16 @@
 <?php
 // ==========================================
-// FUNGSI: FORCE CORS
+// 1. HEADER CORS "PAKSA" (Wajib di Paling Atas)
 // ==========================================
-function caddy_cors() {
-    // 1. Cek Origin (Boleh dari mana aja, atau spesifik Netlify lu)
-    if (isset($_SERVER['HTTP_ORIGIN'])) {
-        header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
-        header('Access-Control-Allow-Credentials: true');
-        header('Access-Control-Max-Age: 86400'); // Cache seharian
-    }
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 
-    // 2. Kalau browser kirim Preflight (OPTIONS), langsung jawab OK & MATIKAN PHP
-    if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-        if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']))
-            header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");         
-
-        if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']))
-            header("Access-Control-Allow-Headers: {$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");
-
-        http_response_code(200);
-        exit(0); // PENTING: Matikan proses di sini!
-    }
+// Matikan Preflight Request
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    http_response_code(200);
+    exit();
 }
-
-// Panggil fungsinya
-caddy_cors();
 
 // ==========================================
 // 2. BAGIAN LOGIC LOGIN
@@ -32,11 +18,10 @@ caddy_cors();
 
 header("Content-Type: application/json");
 
-// Cek path database kamu. Pastikan ../ nya sudah benar sesuai struktur folder
-// Gunakan include, bukan require_once, biar kalau error path-nya ketahuan
+// Include database (Pastikan path ../ benar)
 include '../../config/database.php'; 
 
-// Cek koneksi database (Optional, buat debugging)
+// Cek koneksi database
 if (!isset($conn)) {
     echo json_encode(["status" => false, "message" => "Koneksi Database Gagal"]);
     exit;
@@ -68,21 +53,15 @@ $user = $result->fetch_assoc();
 // 3. VERIFIKASI PASSWORD
 // ==========================================
 
-// PENTING: Pilih salah satu metode di bawah ini sesuai isi database kamu
-
-// METODE A: Jika password di database sudah di-hash (pake password_hash)
+// Gunakan password_verify jika di DB ter-hash
 if (!password_verify($password, $user['password'])) {
-    echo json_encode(["status" => false, "message" => "Password salah (Hash)"]);
-    exit;
+    // Fallback: Cek plain text (hanya untuk development/migrasi)
+    // Hapus blok 'else if' ini jika semua user sudah di-hash
+    if ($password !== $user['password']) {
+        echo json_encode(["status" => false, "message" => "Password salah"]);
+        exit;
+    }
 }
-
-/* // METODE B: Jika password di database masih POLOS (Plain Text)
-// Uncomment baris di bawah ini dan matikan METODE A jika passwordmu belum dienkripsi
-if ($password !== $user['password']) {
-    echo json_encode(["status" => false, "message" => "Password salah (Plain)"]);
-    exit;
-}
-*/
 
 // ==========================================
 // 4. SUKSES
@@ -96,5 +75,4 @@ echo json_encode([
         "role" => $user["role"]
     ]
 ]);
-?>
 ?>
