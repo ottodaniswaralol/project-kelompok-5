@@ -20,7 +20,7 @@ $db_path = '../../config/database.php';
 
 if (!file_exists($db_path)) {
     http_response_code(500);
-    echo json_encode(["status" => "error", "message" => "Database file not found at: " . realpath('../../config/')]);
+    echo json_encode(["status" => "error", "message" => "Database file not found"]);
     exit();
 }
 
@@ -31,24 +31,23 @@ if (!isset($conn) || !$conn) {
     exit;
 }
 
-// === 4. LOGIC ===
+// === 4. AMBIL INPUT ===
 $date = $_GET['date'] ?? '';
 $roomRequested = $_GET['room'] ?? '';
 
 if (empty($date) || empty($roomRequested)) {
-    echo json_encode(["status" => "error", "message" => "Harap pilih Tanggal dan Ruangan terlebih dahulu"]);
+    echo json_encode(["status" => "error", "message" => "Pilih Tanggal dan Ruangan dulu bro!"]);
     exit;
 }
 
-// Query dengan JOIN untuk cek status approval
-// Kita gunakan b.booking_id (sesuai delete.php kamu). 
-// JIKA ERROR SQL, ubah b.booking_id menjadi b.id
+// === 5. QUERY SUPER AMAN (LEFT JOIN) ===
+// Kita pakai LEFT JOIN agar data booking yang belum ada status approval-nya TETAP KEAMBIL
+// Asumsi: Primary Key tabel booking adalah 'booking_id'
 $query = "
-    SELECT b.rooms 
+    SELECT b.rooms, ba.status 
     FROM booking b
-    JOIN booking_approval ba ON b.booking_id = ba.booking_id
+    LEFT JOIN booking_approval ba ON b.booking_id = ba.booking_id
     WHERE DATE(b.start_datetime) = ? 
-    AND ba.status NOT IN ('Ditolak', 'Batal', 'Rejected')
 ";
 
 $stmt = $conn->prepare($query);
@@ -63,34 +62,48 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 $isBooked = false;
+$bookedBy = ""; // Untuk debugging: Siapa yang pakai?
 
 while ($row = $result->fetch_assoc()) {
+    // 1. Cek Status Approval
+    // Kalau status NULL (gak ada di tabel approval), kita anggap 'pending' (Booking Tetap Berlaku)
+    $status = $row['status'] ?? 'pending';
+    
+    // Kalau statusnya Ditolak/Batal, berarti ruangan BEBAS (Skip loop ini)
+    if (in_array(strtolower($status), ['ditolak', 'batal', 'rejected', 'cancelled'])) {
+        continue; 
+    }
+
+    // 2. Cek Ruangan
     $roomsDB = $row['rooms'];
     
-    // Handle format JSON array vs String biasa
+    // Decode JSON (misal ["Ruang A"]) atau String biasa ("Ruang A")
     $bookedRoomsArray = json_decode($roomsDB, true);
     if (!is_array($bookedRoomsArray)) {
         $bookedRoomsArray = [$roomsDB];
     }
 
+    // Cek apakah ruangan yang diminta ada di daftar booking ini
     if (in_array($roomRequested, $bookedRoomsArray)) {
         $isBooked = true;
-        break; 
+        // Kita catat statusnya buat info di frontend
+        $bookedBy = "Status: " . ($status ?: 'pending'); 
+        break; // Ketemu bentrok! Stop cari.
     }
 }
 
-// === RESPONSE FINAL YANG LEBIH LENGKAP ===
+// === 6. RESPONSE FINAL ===
 if ($isBooked) {
     echo json_encode([
         "status" => "success", 
         "available" => false, 
-        "message" => "Ruangan sudah terisi pada tanggal tersebut."
+        "message" => "Yah, ruangan sudah terisi pada tanggal ini! ($bookedBy)"
     ]);
 } else {
     echo json_encode([
         "status" => "success", 
         "available" => true, 
-        "message" => "Ruangan tersedia!"
+        "message" => "Aman bro, ruangan tersedia!"
     ]);
 }
 ?>
