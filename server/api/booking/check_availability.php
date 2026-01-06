@@ -31,21 +31,18 @@ if (!isset($conn) || !$conn) {
     exit;
 }
 
-// === 4. LOGIC CHECK AVAILABILITY ===
+// === 4. LOGIC ===
 $date = $_GET['date'] ?? '';
 $roomRequested = $_GET['room'] ?? '';
 
 if (empty($date) || empty($roomRequested)) {
-    echo json_encode(["status" => "error", "message" => "Parameter tanggal atau ruangan kurang"]);
+    echo json_encode(["status" => "error", "message" => "Harap pilih Tanggal dan Ruangan terlebih dahulu"]);
     exit;
 }
 
-// === QUERY BARU (JOIN TABLE) ===
-// Kita ambil data ruangan dari tabel booking (b)
-// Tapi kita cek statusnya di tabel booking_approval (ba)
-// ASUMSI: Nama Primary Key di tabel booking adalah 'booking_id' (sesuai file delete.php kamu)
-// JIKA ERROR "Unknown column 'b.booking_id'", GANTI JADI 'b.id'
-
+// Query dengan JOIN untuk cek status approval
+// Kita gunakan b.booking_id (sesuai delete.php kamu). 
+// JIKA ERROR SQL, ubah b.booking_id menjadi b.id
 $query = "
     SELECT b.rooms 
     FROM booking b
@@ -57,7 +54,6 @@ $query = "
 $stmt = $conn->prepare($query);
 
 if (!$stmt) {
-    // Tampilkan error query biar gampang debug
     echo json_encode(["status" => "error", "message" => "Query Error: " . $conn->error]);
     exit;
 }
@@ -68,24 +64,33 @@ $result = $stmt->get_result();
 
 $isBooked = false;
 
-// Loop semua booking di tanggal itu
 while ($row = $result->fetch_assoc()) {
     $roomsDB = $row['rooms'];
     
-    // Coba decode JSON
+    // Handle format JSON array vs String biasa
     $bookedRoomsArray = json_decode($roomsDB, true);
-    
-    // Jika format lama (bukan JSON), jadikan array manual
     if (!is_array($bookedRoomsArray)) {
         $bookedRoomsArray = [$roomsDB];
     }
 
-    // Cek bentrok
     if (in_array($roomRequested, $bookedRoomsArray)) {
         $isBooked = true;
         break; 
     }
 }
 
-echo json_encode(["available" => !$isBooked]);
+// === RESPONSE FINAL YANG LEBIH LENGKAP ===
+if ($isBooked) {
+    echo json_encode([
+        "status" => "success", 
+        "available" => false, 
+        "message" => "Ruangan sudah terisi pada tanggal tersebut."
+    ]);
+} else {
+    echo json_encode([
+        "status" => "success", 
+        "available" => true, 
+        "message" => "Ruangan tersedia!"
+    ]);
+}
 ?>
