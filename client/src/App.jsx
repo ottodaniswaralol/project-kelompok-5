@@ -360,41 +360,36 @@ const PeminjamanPage = ({ user, onBackToMenu, onToDashboard }) => {
   // 3. FUNGSI SUBMIT DENGAN AUTO-REFRESH TABEL
   const handleSubmit = async (formData) => {
     setIsSubmitting(true);
-    const fd = new FormData();
     
-    // Data User & Form
-    fd.append("user_id", user.id || user.user_id || 1);
-    fd.append("event_name", formData.eventName);
-    fd.append("organization", formData.orgName);
-    fd.append("pic", formData.pic);
-    fd.append("phone", formData.phone);
-    fd.append("event_description", formData.notes || "");
-    fd.append("start_datetime", `${formData.date} ${formData.startTime}`);
-    fd.append("end_datetime", `${formData.date} ${formData.endTime || formData.startTime}`);
-    fd.append("rooms", JSON.stringify([formData.room]));
-    fd.append("inventory", JSON.stringify([]));
+    // Susun data menjadi Object JSON (Bukan FormData) agar sesuai dengan api.js
+    const payload = {
+      user_id: user.id || user.user_id || 1,
+      event_name: formData.eventName,
+      organization: formData.orgName,
+      pic: formData.pic,
+      phone: formData.phone,
+      event_description: formData.notes || "",
+      start_datetime: `${formData.date} ${formData.startTime}`,
+      end_datetime: `${formData.date} ${formData.endTime || formData.startTime}`,
+      rooms: [formData.room], // Kirim sebagai array sesuai format backend
+      inventory: []
+    };
 
     try {
-      const response = await fetch("https://project-kelompok-5-production.up.railway.app/api/booking/create.php",
-        { method: "POST", body: fd }
-      );
+      // PENTING: Gunakan fungsi createBooking dari api.js, jangan fetch manual!
+      const data = await createBooking(payload);
 
-      const text = await response.text();
-      try {
-        const data = JSON.parse(text);
-        if (data.status === "success") {
-          // SUKSES!
-          setShowSuccessModal(true); 
-          fetchBookings(); // <--- INI KUNCINYA: Tarik data terbaru biar tabel update!
-        } else {
-          alert("Gagal: " + data.message);
-        }
-      } catch (e) {
-        alert("Server Error. Cek Console.");
-        console.error(text);
+      if (data.status === "success") {
+        // SUKSES!
+        setShowSuccessModal(true); 
+        fetchBookings(); // Refresh tabel
+      } else {
+        alert("Gagal dari server: " + (data.message || "Unknown error"));
       }
+
     } catch (error) {
-      alert("Koneksi Gagal");
+      console.error("Error submit:", error);
+      alert("Koneksi Gagal / Error CORS. Cek Console F12.");
     } finally {
       setIsSubmitting(false);
     }
