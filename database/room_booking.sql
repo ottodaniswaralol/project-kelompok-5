@@ -273,7 +273,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'Amanda','Amanda@student.bakrie.ac.id','$2y$10$LIbbLkSsdE2nyKJFSph9h.b1pkRRbATTuH6eehvMUe9u8sgRbXaZ.','mahasiswa',NULL),(2,'Najwa','Najwa@student.bakrie.ac.id','$2y$10$LIbbLkSsdE2nyKJFSph9h.b1pkRRbATTuH6eehvMUe9u8sgRbXaZ.','mahasiswa',NULL),(3,'Ivan','Ivan@student.bakrie.ac.id.com','$2y$10$LIbbLkSsdE2nyKJFSph9h.b1pkRRbATTuH6eehvMUe9u8sgRbXaZ.','mahasiswa',NULL),(4,'Fadil','Fadil@student.bakrie.ac.id','$2y$10$LIbbLkSsdE2nyKJFSph9h.b1pkRRbATTuH6eehvMUe9u8sgRbXaZ.','mahasiswa',NULL),(5,'Otto','Otto@student.bakrie.ac.id','$2y$10$LIbbLkSsdE2nyKJFSph9h.b1pkRRbATTuH6eehvMUe9u8sgRbXaZ.','mahasiswa',NULL);
+INSERT INTO `users` VALUES (1,'Amanda','Amanda@student.bakrie.ac.id','$2y$10$LIbbLkSsdE2nyKJFSph9h.b1pkRRbATTuH6eehvMUe9u8sgRbXaZ.','mahasiswa',NULL),(2,'Najwa','Najwa@student.bakrie.ac.id','$2y$10$LIbbLkSsdE2nyKJFSph9h.b1pkRRbATTuH6eehvMUe9u8sgRbXaZ.','mahasiswa',NULL),(3,'Ivan','Ivan@student.bakrie.ac.id','$2y$10$LIbbLkSsdE2nyKJFSph9h.b1pkRRbATTuH6eehvMUe9u8sgRbXaZ.','mahasiswa',NULL),(4,'Fadil','Fadil@student.bakrie.ac.id','$2y$10$LIbbLkSsdE2nyKJFSph9h.b1pkRRbATTuH6eehvMUe9u8sgRbXaZ.','mahasiswa',NULL),(5,'Otto','Otto@student.bakrie.ac.id','$2y$10$LIbbLkSsdE2nyKJFSph9h.b1pkRRbATTuH6eehvMUe9u8sgRbXaZ.','mahasiswa',NULL);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
