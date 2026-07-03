@@ -1,46 +1,65 @@
 <?php
-// 1. CORS HARDCODE (Biar frontend gak teriak error CORS)
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 
-// Handle Preflight Request (Browser suka nanya dulu sebelum kirim data beneran)
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
-// 2. Koneksi Database
 require_once '../../config/database.php';
-
 header('Content-Type: application/json');
 
 try {
-    // 3. Ambil & Validasi Input (Dipaksa jadi Integer)
+    $role       = isset($_GET['role']) ? $_GET['role'] : '';
     $booking_id = isset($_GET['booking_id']) ? (int)$_GET['booking_id'] : 0;
 
-    // 4. Logika Query Aman (Prepared Statement)
-    if ($booking_id > 0) {
-        // Kalau ada ID, cari spesifik
-        $stmt = $conn->prepare("SELECT * FROM booking_approval WHERE booking_id = ? ORDER BY approval_date DESC");
-        $stmt->bind_param("i", $booking_id);
-    } else {
-        // Kalau gak ada ID, ambil semua (dibatasi 100 biar ringan)
-        $stmt = $conn->prepare("SELECT * FROM booking_approval ORDER BY approval_date DESC LIMIT 100");
+    // Filter step berdasarkan role
+    $step_filter = '';
+    if ($role === 'marketing') {
+        $step_filter = "AND ba.step = 'marketing'";
+    } elseif ($role === 'bima') {
+        $step_filter = "AND ba.step = 'bima'";
+    } elseif ($role === 'ga') {
+        $step_filter = "AND ba.step = 'ga'";
     }
 
-    $stmt->execute();
-    $result = $stmt->get_result();
+    if ($booking_id > 0) {
+        $sql = "SELECT ba.*, b.event_name, b.organization, b.start_datetime, b.end_datetime,
+                       b.phone, b.event_description, b.memo_file, b.status AS booking_status,
+                       b.recurring_group_id, u.name AS peminjam, u.role AS peminjam_role,
+                       r.room_name
+                FROM booking_approval ba
+                JOIN booking b ON b.booking_id = ba.booking_id
+                JOIN users u ON u.user_id = b.user_id
+                JOIN booking_rooms br ON br.booking_id = b.booking_id
+                JOIN rooms r ON r.room_id = br.room_id
+                WHERE ba.booking_id = $booking_id
+                ORDER BY ba.approved_at DESC";
+    } else {
+        $sql = "SELECT ba.*, b.event_name, b.organization, b.start_datetime, b.end_datetime,
+                       b.phone, b.event_description, b.memo_file, b.status AS booking_status,
+                       b.recurring_group_id, u.name AS peminjam, u.role AS peminjam_role,
+                       r.room_name
+                FROM booking_approval ba
+                JOIN booking b ON b.booking_id = ba.booking_id
+                JOIN users u ON u.user_id = b.user_id
+                JOIN booking_rooms br ON br.booking_id = b.booking_id
+                JOIN rooms r ON r.room_id = br.room_id
+                WHERE 1=1 $step_filter
+                ORDER BY ba.approved_at DESC
+                LIMIT 100";
+    }
 
-    $data = [];
+    $result = $conn->query($sql);
+    $data   = [];
     while ($row = $result->fetch_assoc()) {
         $data[] = $row;
     }
-
     echo json_encode($data);
-
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(["status" => "error", "message" => "Server error: " . $e->getMessage()]);
+    echo json_encode(["status" => "error", "message" => $e->getMessage()]);
 }
 ?>
