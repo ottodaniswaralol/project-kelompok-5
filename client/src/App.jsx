@@ -892,8 +892,8 @@ const LoginPage = ({ onLogin, loading }) => {
           </div>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Username</label>
-              <input type="text" required className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none" placeholder="username" value={user} onChange={(e) => setUser(e.target.value)} />
+              <label className="block text-sm font-bold text-gray-700 mb-2">Email</label>
+              <input type="text" required className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none" placeholder="email@student.bakrie.ac.id" value={user} onChange={(e) => setUser(e.target.value)} />
             </div>
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">Password</label>
