@@ -37,8 +37,8 @@ if (empty($username) || empty($password)) {
 }
 
 // Query ke database
-$stmt = $conn->prepare("SELECT * FROM users WHERE username = ? OR name = ?");
-$stmt->bind_param("ss", $username, $username);
+$stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
+$stmt->bind_param("s", $username);
 $stmt->execute();
 $result = $stmt->get_result();
 
