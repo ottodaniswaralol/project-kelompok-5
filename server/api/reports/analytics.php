@@ -34,8 +34,10 @@ $chart_sql = "SELECT room_name, total_bookings, total_minutes_used
 
 $chart_result = mysqli_query($conn, $chart_sql);
 $chart_data = [];
-while ($row = mysqli_fetch_assoc($chart_result)) {
-    $chart_data[] = $row;
+if ($chart_result && mysqli_num_rows($chart_result) > 0) {
+    while ($row = mysqli_fetch_assoc($chart_result)) {
+        $chart_data[] = $row;
+    }
 }
 
 // Query 2: Summary statistik
@@ -48,7 +50,7 @@ FROM booking
 WHERE MONTH(start_datetime) = $month AND YEAR(start_datetime) = $year";
 
 $summary_result = mysqli_query($conn, $summary_sql);
-$summary = mysqli_fetch_assoc($summary_result);
+$summary = $summary_result ? mysqli_fetch_assoc($summary_result) : null;
 
 // Query 3: Room popularity (hari & jam tersibuk)
 $popularity_sql = "SELECT room_name, day_name, hour_of_day, booking_count
@@ -58,8 +60,10 @@ $popularity_sql = "SELECT room_name, day_name, hour_of_day, booking_count
 
 $popularity_result = mysqli_query($conn, $popularity_sql);
 $popularity_data = [];
-while ($row = mysqli_fetch_assoc($popularity_result)) {
-    $popularity_data[] = $row;
+if ($popularity_result && mysqli_num_rows($popularity_result) > 0) {
+    while ($row = mysqli_fetch_assoc($popularity_result)) {
+        $popularity_data[] = $row;
+    }
 }
 
 echo json_encode([
