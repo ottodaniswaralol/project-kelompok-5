@@ -17,9 +17,10 @@ header('Content-Type: application/json');
 
 try {
     // 3. Ambil Input & Validasi (Biar gak "Undefined Index")
-    $approval_id = isset($_POST['approval_id']) ? (int)$_POST['approval_id'] : 0;
-    $approver_id = isset($_POST['approver_id']) ? (int)$_POST['approver_id'] : 0;
-    $notes       = isset($_POST['notes']) ? trim($_POST['notes']) : '';
+    $data        = json_decode(file_get_contents("php://input"), true);
+    $approval_id = isset($data['approval_id']) ? (int)$data['approval_id'] : 0;
+    $approver_id = isset($data['approver_id']) ? (int)$data['approver_id'] : 0;
+    $notes       = isset($data['notes']) ? trim($data['notes']) : '';
 
     // Cek ID Valid
     if ($approval_id == 0 || $approver_id == 0) {
