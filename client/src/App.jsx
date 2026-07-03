@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { login, createBooking, getRooms, createRecurringBooking, getAnalytics, getExportCSVUrl } from "./services/api";
+import { login, createBooking, getRooms, createRecurringBooking, getAnalytics, getExportCSVUrl, getApprovalList, approveBooking, rejectBooking } from "./services/api";
 
 // ===================== UTILS =====================
 const handleLogoError = (e) => {

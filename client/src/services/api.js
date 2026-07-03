@@ -52,3 +52,29 @@ export async function getMyBookingHistory(userId) {
   const response = await fetch(`${BASE_URL}/booking/list.php?user_id=${userId}`);
   return response.json();
 }
+
+// GET APPROVAL LIST
+export async function getApprovalList(role) {
+  const response = await fetch(`${BASE_URL}/approval/list.php?role=${role}`);
+  return response.json();
+}
+
+// APPROVE
+export async function approveBooking(approval_id, approver_id, notes = '') {
+  const response = await fetch(`${BASE_URL}/approval/approve.php`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ approval_id, approver_id, notes }),
+  });
+  return response.json();
+}
+
+// REJECT
+export async function rejectBooking(approval_id, approver_id, notes) {
+  const response = await fetch(`${BASE_URL}/approval/reject.php`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ approval_id, approver_id, notes }),
+  });
+  return response.json();
+}
