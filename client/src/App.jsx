@@ -501,15 +501,16 @@ const DashboardBAA = ({ user, onLogout }) => {
                     </select>
                   </div>
                 </div>
-                <a href={getExportCSVUrl(month, year)} target="_blank" rel="noreferrer"
-                  className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition">
-                  <Icons.Download /> Export CSV
+                <div className="flex gap-2 ml-auto">
+                   <a href={getExportCSVUrl(month, year)} target="_blank" rel="noreferrer"
+                   className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition">
+                   <Icons.Download /> Export CSV
                 </a>
-                  <button onClick={exportPDF}
-                  className="flex items-center gap-2 bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded-lg text-sm font-bold transition">
-                  <Icons.Download /> Export PDF
-                  </button>
-              </div>
+                   <button onClick={exportPDF}
+                   className="flex items-center gap-2 bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded-lg text-sm font-bold transition">
+                   <Icons.Download /> Export PDF
+                </button>
+                </div>
 
               {/* Summary cards */}
               {data?.summary && (
