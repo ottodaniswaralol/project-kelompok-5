@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { login, createBooking, getRooms, createRecurringBooking, getAnalytics, getExportCSVUrl, getApprovalList, approveBooking, rejectBooking } from "./services/api";
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 // ===================== UTILS =====================
 const handleLogoError = (e) => {
@@ -409,6 +411,49 @@ const DashboardBAA = ({ user, onLogout }) => {
   useEffect(() => { fetchData(); }, [month, year]);
   useEffect(() => { if (activeTab === 'antrian') fetchRiwayat(); }, [activeTab]);
 
+  const exportPDF = async () => {
+  try {
+    const res  = await fetch(`${BASE_URL}/reports/export.php?format=pdf&month=${month}&year=${year}`);
+    const json = await res.json();
+
+    const doc = new jsPDF();
+
+    // Header
+    doc.setFontSize(16);
+    doc.setTextColor(153, 0, 0);
+    doc.text('UBakrie Space', 14, 15);
+    doc.setFontSize(11);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Laporan Booking — ${MONTHS[month-1]} ${year}`, 14, 23);
+    doc.setFontSize(9);
+    doc.setTextColor(100);
+    doc.text(`Dicetak: ${new Date().toLocaleString('id-ID')}`, 14, 30);
+
+    // Table
+    autoTable(doc, {
+      startY: 35,
+      head: [['ID', 'Peminjam', 'Kegiatan', 'Ruangan', 'Mulai', 'Selesai', 'Durasi', 'Status']],
+      body: json.data.map(row => [
+        row.booking_id,
+        row.peminjam,
+        row.event_name,
+        row.room_name,
+        row.start_datetime?.split(' ')[0],
+        row.end_datetime?.split(' ')[1]?.slice(0,5),
+        `${row.durasi_menit} mnt`,
+        row.status,
+      ]),
+      headStyles: { fillColor: [153, 0, 0], textColor: 255, fontSize: 8 },
+      bodyStyles: { fontSize: 8 },
+      alternateRowStyles: { fillColor: [255, 245, 245] },
+    });
+
+    doc.save(`laporan_booking_${year}_${month}.pdf`);
+  } catch (e) {
+    alert('Gagal export PDF: ' + e.message);
+  }
+};
+
   const maxBooking = data?.chart_data?.length > 0
     ? Math.max(...data.chart_data.map(d => parseInt(d.total_bookings)))
     : 1;
@@ -460,6 +505,14 @@ const DashboardBAA = ({ user, onLogout }) => {
                   className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition">
                   <Icons.Download /> Export CSV
                 </a>
+                <a href={getExportCSVUrl(month, year)} target="_blank" rel="noreferrer"
+                  className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition">
+                  <Icons.Download /> Export CSV
+                </a>
+                  <button onClick={exportPDF}
+                  className="flex items-center gap-2 bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded-lg text-sm font-bold transition">
+                  <Icons.Download /> Export PDF
+                  </button>
               </div>
 
               {/* Summary cards */}
