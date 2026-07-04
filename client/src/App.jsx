@@ -957,7 +957,7 @@ const BimaPage = ({ user, onBack, onNavigate }) => {
     { label: "Layanan Psikologi",           disabled: true },
     { label: "Student Exit Letter",         disabled: true },
     { label: "Peminjaman Fasilitas Kampus", action: 'peminjaman', highlight: true },
-    { label: "Analytics Ruangan",           action: 'analytics',  special: true },
+    ...(user?.role === 'baa' || user?.role === 'ga' ? [{ label: "Analytics Ruangan", action: 'analytics', special: true }] : []),
     { label: "Buku Panduan",               disabled: true },
     { label: "Surat Keterangan Aktif",     disabled: true },
   ];
