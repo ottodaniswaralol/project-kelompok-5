@@ -484,7 +484,7 @@ const DashboardBAA = ({ user, onLogout }) => {
           {activeTab === 'analytics' && (
             <>
               {/* Filter */}
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-wrap gap-4 items-end justify-between">
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-wrap gap-4 items-end">
                 <div className="flex gap-4">
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1">Bulan</label>
