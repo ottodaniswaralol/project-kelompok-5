@@ -53,7 +53,16 @@ $summary_result = mysqli_query($conn, $summary_sql);
 $summary = $summary_result ? mysqli_fetch_assoc($summary_result) : null;
 
 // Query 3: Room popularity (hari & jam tersibuk)
-$popularity_sql = "SELECT room_name, day_name, hour_of_day, booking_count
+$popularity_sql = "SELECT room_name, day_of_week, hour_of_day, booking_count,
+                   CASE day_of_week
+                     WHEN 1 THEN 'Minggu'
+                     WHEN 2 THEN 'Senin'
+                     WHEN 3 THEN 'Selasa'
+                     WHEN 4 THEN 'Rabu'
+                     WHEN 5 THEN 'Kamis'
+                     WHEN 6 THEN 'Jumat'
+                     WHEN 7 THEN 'Sabtu'
+                   END AS day_name
                    FROM vw_room_popularity
                    ORDER BY booking_count DESC
                    LIMIT 10";
