@@ -27,7 +27,7 @@ try {
 
     if ($booking_id > 0) {
         $sql = "SELECT ba.*, b.event_name, b.organization, b.start_datetime, b.end_datetime,
-                       b.phone, b.event_description, b.memo_file, b.status AS booking_status,
+                       b.phone, b.event_description, b.status AS booking_status,
                        b.recurring_group_id, u.name AS peminjam, u.role AS peminjam_role,
                        r.room_name
                 FROM booking_approval ba
@@ -39,7 +39,7 @@ try {
                 ORDER BY ba.approved_at DESC";
     } else {
         $sql = "SELECT ba.*, b.event_name, b.organization, b.start_datetime, b.end_datetime,
-                       b.phone, b.event_description, b.memo_file, b.status AS booking_status,
+                       b.phone, b.event_description, b.status AS booking_status,
                        b.recurring_group_id, u.name AS peminjam, u.role AS peminjam_role,
                        r.room_name
                 FROM booking_approval ba
