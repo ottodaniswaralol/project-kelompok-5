@@ -38,16 +38,21 @@ try {
         $booking_id  = $step_result['booking_id'];
         $step        = $step_result['step'];
 
-        if ($step === 'bima') {
-            // Teruskan ke GA
-            $next_stmt = $conn->prepare("INSERT INTO booking_approval (booking_id, step, status) VALUES (?, 'ga', 'pending')");
-            $next_stmt->bind_param("i", $booking_id);
-            $next_stmt->execute();
+        if ($step === 'marketing') {
+           // Marketing approve → teruskan ke BIMA
+           $next_stmt = $conn->prepare("INSERT INTO booking_approval (booking_id, step, status) VALUES (?, 'bima', 'pending')");
+           $next_stmt->bind_param("i", $booking_id);
+           $next_stmt->execute();
+        } elseif ($step === 'bima') {
+           // BIMA approve → teruskan ke GA
+           $next_stmt = $conn->prepare("INSERT INTO booking_approval (booking_id, step, status) VALUES (?, 'ga', 'pending')");
+           $next_stmt->bind_param("i", $booking_id);
+           $next_stmt->execute();
         } else {
-            // GA atau Marketing approve → final
-            $final_stmt = $conn->prepare("UPDATE booking SET status = 'approved' WHERE booking_id = ?");
-            $final_stmt->bind_param("i", $booking_id);
-            $final_stmt->execute();
+           // GA approve → final
+           $final_stmt = $conn->prepare("UPDATE booking SET status = 'approved' WHERE booking_id = ?");
+           $final_stmt->bind_param("i", $booking_id);
+           $final_stmt->execute();
         }
 
         echo json_encode(["status" => "success", "message" => "Pengajuan berhasil disetujui"]);
