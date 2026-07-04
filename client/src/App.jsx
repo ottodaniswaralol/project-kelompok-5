@@ -1184,6 +1184,53 @@ const LoginPage = ({ onLogin, loading }) => {
   );
 };
 
+// ===================== GA SELECT PAGE =====================
+const GASelectPage = ({ user, onSelect, onLogout }) => (
+  <div className="min-h-screen bg-gray-100 font-sans flex items-center justify-center p-4">
+    <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden">
+      <div className="bg-[#990000] text-white p-6 flex justify-between items-center">
+        <div className="flex items-center gap-4">
+          <div className="bg-white p-2 rounded-lg shadow-md">
+            <img src={LOGO_PRIMARY_URL} onError={handleLogoError} alt="Logo" className="h-8 w-auto" />
+          </div>
+          <div>
+            <h1 className="font-extrabold text-xl">UBakrie Space</h1>
+            <p className="text-xs text-red-200">General Affairs Dashboard</p>
+          </div>
+        </div>
+        <button onClick={onLogout} className="bg-white/10 hover:bg-white hover:text-[#990000] text-white border border-white/30 px-4 py-2 rounded-lg text-sm font-bold transition flex items-center gap-2">
+          <Icons.Logout /> Logout
+        </button>
+      </div>
+
+      <div className="p-10">
+        <div className="text-center mb-10">
+          <p className="text-gray-500 text-sm">Selamat datang, <span className="font-bold text-gray-800">{user?.name}</span></p>
+          <h2 className="text-2xl font-extrabold text-gray-900 mt-1">Pilih Dashboard</h2>
+        </div>
+        <div className="grid grid-cols-2 gap-6">
+          <div onClick={() => onSelect('admin')}
+            className="cursor-pointer border-2 border-gray-200 hover:border-[#990000] rounded-xl p-8 flex flex-col items-center text-center transition-all hover:shadow-lg group">
+            <div className="w-16 h-16 bg-red-50 group-hover:bg-[#990000] rounded-full flex items-center justify-center mb-4 transition-colors">
+              <span className="text-2xl group-hover:text-white text-[#990000]">📋</span>
+            </div>
+            <h3 className="font-bold text-gray-800 text-lg mb-2">Dashboard Admin</h3>
+            <p className="text-xs text-gray-500">Kelola antrean permohonan, approve/reject booking masuk</p>
+          </div>
+          <div onClick={() => onSelect('analytics')}
+            className="cursor-pointer border-2 border-gray-200 hover:border-blue-600 rounded-xl p-8 flex flex-col items-center text-center transition-all hover:shadow-lg group">
+            <div className="w-16 h-16 bg-blue-50 group-hover:bg-blue-600 rounded-full flex items-center justify-center mb-4 transition-colors">
+              <span className="text-2xl group-hover:text-white text-blue-600">📊</span>
+            </div>
+            <h3 className="font-bold text-gray-800 text-lg mb-2">Dashboard Analitik</h3>
+            <p className="text-xs text-gray-500">Lihat statistik penggunaan ruangan dan export laporan</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 // ===================== APP =====================
 function App() {
   const [user, setUser]         = useState(() => { const s = localStorage.getItem("user"); return s ? JSON.parse(s) : null; });
@@ -1225,10 +1272,11 @@ function App() {
   }
 
   if (role === 'ga') {
-    // GA bisa akses keduanya, default ke admin tapi ada tombol ke analytics
-    if (currentPage === 'analytics') return <DashboardBAA user={user} onLogout={handleLogout} />;
-    return <DashboardAdmin user={user} onLogout={handleLogout} />;
-  }
+  if (currentPage === 'ga-select')  return <GASelectPage user={user} onLogout={handleLogout} onSelect={(page) => setCurrentPage(page === 'admin' ? 'ga-admin' : 'ga-analytics')} />;
+  if (currentPage === 'ga-admin')   return <DashboardAdmin user={user} onLogout={handleLogout} />;
+  if (currentPage === 'ga-analytics') return <DashboardBAA user={user} onLogout={handleLogout} />;
+  return <GASelectPage user={user} onLogout={handleLogout} onSelect={(page) => setCurrentPage(page === 'admin' ? 'ga-admin' : 'ga-analytics')} />;
+}
 
   // Mahasiswa/dosen
   if (currentPage === 'analytics')  return <DashboardBAA    user={user} onBack={() => setCurrentPage('bima')} />;
