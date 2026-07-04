@@ -481,119 +481,120 @@ const DashboardBAA = ({ user, onLogout }) => {
         <div className="flex-1 overflow-y-auto p-8 space-y-6">
 
           {/* TAB ANALYTICS */}
-          {activeTab === 'analytics' && (
-            <>
-              {/* Filter */}
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-wrap gap-4 items-end">
-                <div className="flex gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-1">Bulan</label>
-                    <select value={month} onChange={e => setMonth(parseInt(e.target.value))}
-                      className="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none">
-                      {MONTHS.map((m, i) => <option key={i} value={i+1}>{m}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-1">Tahun</label>
-                    <select value={year} onChange={e => setYear(parseInt(e.target.value))}
-                      className="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none">
-                      {[2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
-                    </select>
-                  </div>
-                </div>
-                <div className="flex gap-2 ml-auto">
-                   <a href={getExportCSVUrl(month, year)} target="_blank" rel="noreferrer"
-                   className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition">
-                   <Icons.Download /> Export CSV
-                </a>
-                   <button onClick={exportPDF}
-                   className="flex items-center gap-2 bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded-lg text-sm font-bold transition">
-                   <Icons.Download /> Export PDF
-                </button>
-                </div>
+{activeTab === 'analytics' && (
+  <>
+    {/* Filter */}
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-wrap gap-4 items-end">
+      <div className="flex gap-4">
+        <div>
+          <label className="block text-xs font-bold text-gray-500 mb-1">Bulan</label>
+          <select value={month} onChange={e => setMonth(parseInt(e.target.value))}
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none">
+            {MONTHS.map((m, i) => <option key={i} value={i+1}>{m}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-bold text-gray-500 mb-1">Tahun</label>
+          <select value={year} onChange={e => setYear(parseInt(e.target.value))}
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none">
+            {[2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
+          </select>
+        </div>
+      </div>
+      <div className="flex gap-2 ml-auto">
+        <a href={getExportCSVUrl(month, year)} target="_blank" rel="noreferrer"
+          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition">
+          <Icons.Download /> Export CSV
+        </a>
+        <button onClick={exportPDF}
+          className="flex items-center gap-2 bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded-lg text-sm font-bold transition">
+          <Icons.Download /> Export PDF
+        </button>
+      </div>
+    </div>
 
-              {/* Summary cards */}
-              {data?.summary && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {[
-                    { label: 'Total Booking', value: data.summary.total_booking,  color: 'bg-blue-50 text-blue-700 border-blue-100' },
-                    { label: 'Disetujui',     value: data.summary.total_approved, color: 'bg-green-50 text-green-700 border-green-100' },
-                    { label: 'Ditolak',       value: data.summary.total_rejected, color: 'bg-red-50 text-red-700 border-red-100' },
-                    { label: 'Pending',       value: data.summary.total_pending,  color: 'bg-yellow-50 text-yellow-700 border-yellow-100' },
-                  ].map((card, i) => (
-                    <div key={i} className={`rounded-xl border p-5 ${card.color}`}>
-                      <p className="text-xs font-bold uppercase tracking-wider opacity-70">{card.label}</p>
-                      <p className="text-3xl font-black mt-1">{card.value || 0}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
+    {/* Summary cards */}
+    {data?.summary && (
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          { label: 'Total Booking', value: data.summary.total_booking,  color: 'bg-blue-50 text-blue-700 border-blue-100' },
+          { label: 'Disetujui',     value: data.summary.total_approved, color: 'bg-green-50 text-green-700 border-green-100' },
+          { label: 'Ditolak',       value: data.summary.total_rejected, color: 'bg-red-50 text-red-700 border-red-100' },
+          { label: 'Pending',       value: data.summary.total_pending,  color: 'bg-yellow-50 text-yellow-700 border-yellow-100' },
+        ].map((card, i) => (
+          <div key={i} className={`rounded-xl border p-5 ${card.color}`}>
+            <p className="text-xs font-bold uppercase tracking-wider opacity-70">{card.label}</p>
+            <p className="text-3xl font-black mt-1">{card.value || 0}</p>
+          </div>
+        ))}
+      </div>
+    )}
 
-              {/* Bar chart */}
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-                <h3 className="text-sm font-bold text-gray-700 mb-6">
-                  Booking per Ruangan — {MONTHS[month-1]} {year}
-                </h3>
-                {loading ? (
-                  <div className="flex justify-center py-12">
-                    <div className="w-8 h-8 border-4 border-gray-200 border-t-red-600 rounded-full animate-spin"></div>
-                  </div>
-                ) : data?.chart_data?.length > 0 ? (
-                  <div className="space-y-3">
-                    {data.chart_data.map((item, i) => (
-                      <div key={i} className="flex items-center gap-4">
-                        <div className="w-32 text-xs font-medium text-gray-600 text-right shrink-0">{item.room_name}</div>
-                        <div className="flex-1 bg-gray-100 rounded-full h-7 overflow-hidden">
-                          <div className="h-full bg-[#990000] rounded-full flex items-center justify-end pr-3 transition-all duration-500"
-                            style={{ width: `${(parseInt(item.total_bookings) / maxBooking) * 100}%` }}>
-                            <span className="text-[10px] font-bold text-white">{item.total_bookings}</span>
-                          </div>
-                        </div>
-                        <div className="w-24 text-xs text-gray-500 shrink-0">{item.total_minutes_used} menit</div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-12 text-gray-400">
-                    <p className="text-sm">Tidak ada data approved untuk periode ini</p>
-                  </div>
-                )}
+    {/* Bar chart */}
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+      <h3 className="text-sm font-bold text-gray-700 mb-6">
+        Booking per Ruangan — {MONTHS[month-1]} {year}
+      </h3>
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <div className="w-8 h-8 border-4 border-gray-200 border-t-red-600 rounded-full animate-spin"></div>
+        </div>
+      ) : data?.chart_data?.length > 0 ? (
+        <div className="space-y-3">
+          {data.chart_data.map((item, i) => (
+            <div key={i} className="flex items-center gap-4">
+              <div className="w-32 text-xs font-medium text-gray-600 text-right shrink-0">{item.room_name}</div>
+              <div className="flex-1 bg-gray-100 rounded-full h-7 overflow-hidden">
+                <div className="h-full bg-[#990000] rounded-full flex items-center justify-end pr-3 transition-all duration-500"
+                  style={{ width: `${(parseInt(item.total_bookings) / maxBooking) * 100}%` }}>
+                  <span className="text-[10px] font-bold text-white">{item.total_bookings}</span>
+                </div>
               </div>
+              <div className="w-24 text-xs text-gray-500 shrink-0">{item.total_minutes_used} menit</div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-12 text-gray-400">
+          <p className="text-sm">Tidak ada data approved untuk periode ini</p>
+        </div>
+      )}
+    </div>
 
-              {/* Popularitas */}
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-                <h3 className="text-sm font-bold text-gray-700 mb-4">Pola Penggunaan Ruangan (Top 10)</h3>
-                {data?.popularity?.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="text-xs text-gray-500 uppercase border-b">
-                          <th className="pb-3 text-left">Ruangan</th>
-                          <th className="pb-3 text-left">Hari</th>
-                          <th className="pb-3 text-left">Jam</th>
-                          <th className="pb-3 text-center">Total Booking</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-50">
-                        {data.popularity.map((item, i) => (
-                          <tr key={i} className="hover:bg-gray-50">
-                            <td className="py-3 font-medium text-gray-800">{item.room_name}</td>
-                            <td className="py-3 text-gray-600">{item.day_name}</td>
-                            <td className="py-3 text-gray-600">{item.hour_of_day}:00</td>
-                            <td className="py-3 text-center">
-                              <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs font-bold">{item.booking_count}</span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <p className="text-center text-gray-400 text-sm py-8">Belum ada data pola penggunaan</p>
-                )}
-              </div>
-            </>
-          )}
+    {/* Popularitas */}
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+      <h3 className="text-sm font-bold text-gray-700 mb-4">Pola Penggunaan Ruangan (Top 10)</h3>
+      {data?.popularity?.length > 0 ? (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-xs text-gray-500 uppercase border-b">
+                <th className="pb-3 text-left">Ruangan</th>
+                <th className="pb-3 text-left">Hari</th>
+                <th className="pb-3 text-left">Jam</th>
+                <th className="pb-3 text-center">Total Booking</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {data.popularity.map((item, i) => (
+                <tr key={i} className="hover:bg-gray-50">
+                  <td className="py-3 font-medium text-gray-800">{item.room_name}</td>
+                  <td className="py-3 text-gray-600">{item.day_name}</td>
+                  <td className="py-3 text-gray-600">{item.hour_of_day}:00</td>
+                  <td className="py-3 text-center">
+                    <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs font-bold">{item.booking_count}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <p className="text-center text-gray-400 text-sm py-8">Belum ada data pola penggunaan</p>
+      )}
+    </div>
+  </>
+)}
 
           {/* TAB RIWAYAT */}
           {activeTab === 'antrian' && (
