@@ -52,8 +52,15 @@ try {
                 LIMIT 100";
     }
 
-    $result = $conn->query($sql);
-    $data   = [];
+$result = $conn->query($sql);
+    
+    if (!$result) {
+        http_response_code(500);
+        echo json_encode(["status" => "error", "message" => $conn->error, "sql" => $sql]);
+        exit;
+    }
+    
+    $data = [];
     while ($row = $result->fetch_assoc()) {
         $data[] = $row;
     }
