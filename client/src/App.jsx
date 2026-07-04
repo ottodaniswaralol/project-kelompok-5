@@ -7,6 +7,7 @@ const handleLogoError = (e) => {
   e.target.src = "https://lpkm.bakrie.ac.id/assets/img/logo-ub.png";
 };
 const LOGO_PRIMARY_URL = "https://upload.wikimedia.org/wikipedia/commons/a/a0/Universitas_Bakrie_Logo.svg";
+const BASE_URL = "https://project-kelompok-5-production.up.railway.app/api";
 
 // ===================== ICONS =====================
 const Icons = {
@@ -22,6 +23,9 @@ const Icons = {
   Chart: () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>,
   Repeat: () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>,
   Download: () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>,
+  CheckCircle: () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+  XCircle: () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+  Eye: () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>,
 };
 
 // ===================== UI COMPONENTS =====================
@@ -53,24 +57,340 @@ const ModalSuccess = ({ onClose, title, message }) => (
   </div>
 );
 
-// ===================== ANALYTICS DASHBOARD =====================
-const AnalyticsPage = ({ user, onBack }) => {
+// Sidebar reusable
+const AdminSidebar = ({ user, activeTab, setActiveTab, onLogout, menuItems }) => (
+  <aside className="w-64 bg-[#7a1e1e] text-white flex flex-col shrink-0 shadow-2xl z-20">
+    <div className="p-6 border-b border-red-900/50 flex items-center gap-3 bg-[#601010]">
+      <div className="bg-white p-1.5 rounded shadow-sm">
+        <img src={LOGO_PRIMARY_URL} onError={handleLogoError} alt="Logo" className="w-8 h-auto" />
+      </div>
+      <div>
+        <h1 className="font-bold text-sm tracking-wide">UBakrie Space</h1>
+        <p className="text-[10px] text-red-200 capitalize">{user?.role}</p>
+      </div>
+    </div>
+    <nav className="flex-1 overflow-y-auto py-6 space-y-1">
+      <div className="px-6 text-[10px] font-bold text-red-300 uppercase tracking-widest mb-2">Menu</div>
+      {menuItems.map((item, i) => (
+        <button key={i} onClick={() => setActiveTab(item.key)}
+          className={`w-full text-left px-6 py-3 flex items-center gap-3 transition-all border-l-4 ${activeTab === item.key ? 'bg-[#990000] border-white' : 'border-transparent text-red-100 hover:bg-[#852020]'}`}>
+          {item.icon}<span className="font-medium text-sm">{item.label}</span>
+        </button>
+      ))}
+      <div className="mt-8 px-6 text-[10px] font-bold text-red-300 uppercase tracking-widest mb-2">System</div>
+      <button onClick={onLogout}
+        className="w-full text-left px-6 py-3 flex items-center gap-3 text-red-100 hover:bg-[#852020] border-l-4 border-transparent">
+        <Icons.Logout /><span className="font-medium text-sm">Logout</span>
+      </button>
+    </nav>
+  </aside>
+);
+
+// Admin header reusable
+const AdminHeader = ({ user, title }) => (
+  <header className="h-16 bg-white shadow-sm border-b flex items-center justify-between px-8 shrink-0">
+    <h2 className="text-lg font-bold text-gray-800">{title}</h2>
+    <div className="flex items-center gap-3">
+      <div className="text-right hidden md:block">
+        <p className="text-sm font-bold text-gray-800">{user?.name}</p>
+        <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
+      </div>
+      <div className="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center font-bold">
+        {user?.name?.charAt(0).toUpperCase() || "U"}
+      </div>
+    </div>
+  </header>
+);
+
+// Status badge
+const StatusBadge = ({ status }) => {
+  const map = {
+    approved: 'bg-green-100 text-green-700 border-green-200',
+    rejected:  'bg-red-100 text-red-700 border-red-200',
+    pending:   'bg-yellow-100 text-yellow-700 border-yellow-200',
+  };
+  return (
+    <span className={`inline-flex px-3 py-1 rounded-full text-[10px] font-bold uppercase border ${map[status] || map.pending}`}>
+      {status}
+    </span>
+  );
+};
+
+// ===================== MODAL DETAIL BOOKING =====================
+const ModalDetail = ({ item, user, onClose, onApprove, onReject }) => {
+  const [rejectMode, setRejectMode] = useState(false);
+  const [notes, setNotes]           = useState('');
+  const [loading, setLoading]       = useState(false);
+
+  const handleApprove = async () => {
+    setLoading(true);
+    await onApprove(item.approval_id, notes);
+    setLoading(false);
+    onClose();
+  };
+
+  const handleReject = async () => {
+    if (!notes.trim()) return alert("Alasan penolakan wajib diisi!");
+    setLoading(true);
+    await onReject(item.approval_id, notes);
+    setLoading(false);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden max-h-[90vh] flex flex-col">
+        {/* Header */}
+        <div className="bg-[#990000] text-white p-5 flex justify-between items-center">
+          <h3 className="font-bold text-lg">Detail Pengajuan #{item.booking_id}</h3>
+          <button onClick={onClose} className="hover:bg-white/20 p-1 rounded transition"><Icons.X /></button>
+        </div>
+
+        {/* Body */}
+        <div className="overflow-y-auto flex-1 p-6 space-y-4">
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div><p className="text-xs text-gray-500 font-bold uppercase">Peminjam</p><p className="font-medium text-gray-800">{item.peminjam}</p></div>
+            <div><p className="text-xs text-gray-500 font-bold uppercase">Role</p><p className="font-medium text-gray-800 capitalize">{item.peminjam_role}</p></div>
+            <div><p className="text-xs text-gray-500 font-bold uppercase">Nama Kegiatan</p><p className="font-medium text-gray-800">{item.event_name}</p></div>
+            <div><p className="text-xs text-gray-500 font-bold uppercase">Organisasi</p><p className="font-medium text-gray-800">{item.organization}</p></div>
+            <div><p className="text-xs text-gray-500 font-bold uppercase">Ruangan</p><p className="font-medium text-gray-800">{item.room_name}</p></div>
+            <div><p className="text-xs text-gray-500 font-bold uppercase">Telepon</p><p className="font-medium text-gray-800">{item.phone || '-'}</p></div>
+            <div><p className="text-xs text-gray-500 font-bold uppercase">Mulai</p><p className="font-medium text-gray-800">{item.start_datetime}</p></div>
+            <div><p className="text-xs text-gray-500 font-bold uppercase">Selesai</p><p className="font-medium text-gray-800">{item.end_datetime}</p></div>
+            <div className="col-span-2"><p className="text-xs text-gray-500 font-bold uppercase">Deskripsi</p><p className="font-medium text-gray-800">{item.event_description || '-'}</p></div>
+            <div><p className="text-xs text-gray-500 font-bold uppercase">Step Approval</p><p className="font-medium text-gray-800 capitalize">{item.step}</p></div>
+            <div><p className="text-xs text-gray-500 font-bold uppercase">Status</p><StatusBadge status={item.status} /></div>
+            {item.recurring_group_id && (
+              <div className="col-span-2">
+                <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-xs font-bold">📅 Peminjaman Rutin</span>
+              </div>
+            )}
+          </div>
+
+          {/* Memo file */}
+          {item.memo_file && (
+            <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
+              <p className="text-xs font-bold text-blue-700 mb-2">📎 File Memo</p>
+              <a href={`${BASE_URL.replace('/api','')}/${item.memo_file}`} target="_blank" rel="noreferrer"
+                className="text-blue-600 hover:underline text-sm">{item.memo_file}</a>
+            </div>
+          )}
+
+          {/* Reject input */}
+          {rejectMode && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <label className="block text-sm font-bold text-red-700 mb-2">Alasan Penolakan *</label>
+              <textarea value={notes} onChange={e => setNotes(e.target.value)}
+                className="w-full border border-red-300 rounded-lg px-3 py-2 text-sm outline-none h-24 resize-none focus:ring-2 focus:ring-red-200"
+                placeholder="Tuliskan alasan penolakan..." />
+            </div>
+          )}
+        </div>
+
+        {/* Footer actions */}
+        {item.status === 'pending' && (
+          <div className="p-5 border-t border-gray-100 flex gap-3 justify-end">
+            {!rejectMode ? (
+              <>
+                <button onClick={() => setRejectMode(true)}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-lg border border-red-300 text-red-600 hover:bg-red-50 text-sm font-bold transition">
+                  <Icons.XCircle /> Tolak
+                </button>
+                <button onClick={handleApprove} disabled={loading}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-bold transition disabled:opacity-60">
+                  <Icons.CheckCircle /> {loading ? 'Memproses...' : 'Setujui'}
+                </button>
+              </>
+            ) : (
+              <>
+                <button onClick={() => setRejectMode(false)}
+                  className="px-5 py-2.5 rounded-lg border border-gray-300 text-gray-600 text-sm font-bold hover:bg-gray-50 transition">
+                  Batal
+                </button>
+                <button onClick={handleReject} disabled={loading}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-bold transition disabled:opacity-60">
+                  <Icons.XCircle /> {loading ? 'Memproses...' : 'Konfirmasi Tolak'}
+                </button>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ===================== DASHBOARD ADMIN (BIMA/GA/Marketing) =====================
+const DashboardAdmin = ({ user, onLogout }) => {
+  const [activeTab, setActiveTab]     = useState('antrian');
+  const [approvals, setApprovals]     = useState([]);
+  const [loading, setLoading]         = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [search, setSearch]           = useState('');
+
+  const fetchApprovals = async () => {
+    setLoading(true);
+    try {
+      const data = await getApprovalList(user?.role);
+      setApprovals(Array.isArray(data) ? data : []);
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
+  };
+
+  useEffect(() => { fetchApprovals(); }, []);
+
+  const handleApprove = async (approval_id, notes) => {
+    await approveBooking(approval_id, user?.user_id, notes);
+    fetchApprovals();
+  };
+
+  const handleReject = async (approval_id, notes) => {
+    await rejectBooking(approval_id, user?.user_id, notes);
+    fetchApprovals();
+  };
+
+  const filtered = approvals.filter(a =>
+    a.event_name?.toLowerCase().includes(search.toLowerCase()) ||
+    a.peminjam?.toLowerCase().includes(search.toLowerCase()) ||
+    a.room_name?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const pending  = approvals.filter(a => a.status === 'pending').length;
+  const approved = approvals.filter(a => a.status === 'approved').length;
+  const rejected = approvals.filter(a => a.status === 'rejected').length;
+
+  const menuItems = [
+    { key: 'antrian', label: 'Antrean Permohonan', icon: <Icons.Document /> },
+    { key: 'riwayat', label: 'Riwayat Keputusan', icon: <Icons.Clock /> },
+  ];
+
+  const displayData = activeTab === 'antrian'
+    ? filtered.filter(a => a.status === 'pending')
+    : filtered.filter(a => a.status !== 'pending');
+
+  return (
+    <div className="flex h-screen bg-gray-50 overflow-hidden font-sans">
+      <AdminSidebar user={user} activeTab={activeTab} setActiveTab={setActiveTab} onLogout={onLogout} menuItems={menuItems} />
+
+      <main className="flex-1 flex flex-col overflow-hidden">
+        <AdminHeader user={user} title="Dashboard Admin" />
+
+        <div className="flex-1 overflow-y-auto p-8 space-y-6">
+
+          {/* Summary cards */}
+          <div className="grid grid-cols-3 gap-4">
+            {[
+              { label: 'Menunggu', value: pending,  color: 'bg-yellow-50 text-yellow-700 border-yellow-100' },
+              { label: 'Disetujui', value: approved, color: 'bg-green-50 text-green-700 border-green-100' },
+              { label: 'Ditolak',   value: rejected,  color: 'bg-red-50 text-red-700 border-red-100' },
+            ].map((c, i) => (
+              <div key={i} className={`rounded-xl border p-5 ${c.color}`}>
+                <p className="text-xs font-bold uppercase tracking-wider opacity-70">{c.label}</p>
+                <p className="text-3xl font-black mt-1">{c.value}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Table */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="p-4 border-b bg-gray-50 flex justify-between items-center">
+              <h3 className="text-sm font-bold text-gray-700">
+                {activeTab === 'antrian' ? 'Antrean Permohonan' : 'Riwayat Keputusan'}
+              </h3>
+              <div className="relative">
+                <input type="text" placeholder="Cari..." value={search} onChange={e => setSearch(e.target.value)}
+                  className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-red-400 w-56" />
+                <div className="absolute left-3 top-2.5 text-gray-400"><Icons.Search /></div>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              {loading ? (
+                <div className="flex justify-center py-16">
+                  <div className="w-8 h-8 border-4 border-gray-200 border-t-red-600 rounded-full animate-spin"></div>
+                </div>
+              ) : (
+                <table className="w-full text-left">
+                  <thead className="bg-gray-100 text-gray-600 text-xs uppercase tracking-wider">
+                    <tr>
+                      <th className="px-6 py-4 border-b">Peminjam</th>
+                      <th className="px-6 py-4 border-b">Kegiatan</th>
+                      <th className="px-6 py-4 border-b">Ruangan</th>
+                      <th className="px-6 py-4 border-b">Tanggal</th>
+                      <th className="px-6 py-4 border-b">Step</th>
+                      <th className="px-6 py-4 border-b text-center">Status</th>
+                      <th className="px-6 py-4 border-b text-center">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-sm text-gray-700 divide-y divide-gray-100">
+                    {displayData.length === 0 ? (
+                      <tr><td colSpan="7" className="text-center py-16 text-gray-400">Tidak ada data.</td></tr>
+                    ) : displayData.map((item, i) => (
+                      <tr key={i} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4">
+                          <p className="font-bold text-gray-800">{item.peminjam}</p>
+                          <p className="text-xs text-gray-500 capitalize">{item.peminjam_role}</p>
+                        </td>
+                        <td className="px-6 py-4">
+                          <p className="font-medium text-gray-800">{item.event_name}</p>
+                          <p className="text-xs text-gray-500">{item.organization}</p>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-xs font-bold">{item.room_name}</span>
+                        </td>
+                        <td className="px-6 py-4 text-xs text-gray-600">
+                          <p>{item.start_datetime?.split(' ')[0]}</p>
+                          <p className="text-gray-400">{item.start_datetime?.split(' ')[1]?.slice(0,5)} - {item.end_datetime?.split(' ')[1]?.slice(0,5)}</p>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs font-bold uppercase">{item.step}</span>
+                        </td>
+                        <td className="px-6 py-4 text-center"><StatusBadge status={item.status} /></td>
+                        <td className="px-6 py-4 text-center">
+                          <button onClick={() => setSelectedItem(item)}
+                            className="flex items-center gap-1 mx-auto bg-[#990000] hover:bg-[#7a0000] text-white px-3 py-1.5 rounded text-xs font-bold transition">
+                            <Icons.Eye /> Detail
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {selectedItem && (
+        <ModalDetail
+          item={selectedItem}
+          user={user}
+          onClose={() => setSelectedItem(null)}
+          onApprove={handleApprove}
+          onReject={handleReject}
+        />
+      )}
+    </div>
+  );
+};
+
+// ===================== DASHBOARD BAA =====================
+const DashboardBAA = ({ user, onLogout }) => {
   const now = new Date();
-  const [month, setMonth] = useState(now.getMonth() + 1);
-  const [year, setYear]   = useState(now.getFullYear());
-  const [data, setData]   = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('analytics');
+  const [month, setMonth]         = useState(now.getMonth() + 1);
+  const [year, setYear]           = useState(now.getFullYear());
+  const [data, setData]           = useState(null);
+  const [loading, setLoading]     = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
     try {
       const res = await getAnalytics(month, year);
       setData(res);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
   };
 
   useEffect(() => { fetchData(); }, [month, year]);
@@ -81,58 +401,34 @@ const AnalyticsPage = ({ user, onBack }) => {
 
   const MONTHS = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 
+  const menuItems = [
+    { key: 'analytics', label: 'Dashboard Analitik', icon: <Icons.Chart /> },
+    { key: 'antrian',   label: 'Riwayat Booking',    icon: <Icons.Document /> },
+  ];
+
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden font-sans">
-      {/* SIDEBAR */}
-      <aside className="w-64 bg-[#7a1e1e] text-white flex flex-col shrink-0 shadow-2xl z-20">
-        <div className="p-6 border-b border-red-900/50 flex items-center gap-3 bg-[#601010]">
-          <div className="bg-white p-1.5 rounded shadow-sm">
-            <img src={LOGO_PRIMARY_URL} onError={handleLogoError} alt="Logo" className="w-8 h-auto" />
-          </div>
-          <div><h1 className="font-bold text-sm tracking-wide">UBakrie Space</h1><p className="text-[10px] text-red-200">Analytics</p></div>
-        </div>
-        <nav className="flex-1 py-6 space-y-1">
-          <div className="px-6 text-[10px] font-bold text-red-300 uppercase tracking-widest mb-2">Menu</div>
-          <button className="w-full text-left px-6 py-3 flex items-center gap-3 bg-[#990000] border-l-4 border-white">
-            <Icons.Chart /><span className="font-medium text-sm">Dashboard Analitik</span>
-          </button>
-          <button onClick={onBack} className="w-full text-left px-6 py-3 flex items-center gap-3 text-red-100 hover:bg-[#852020] border-l-4 border-transparent">
-            <Icons.ChevronLeft /><span className="font-medium text-sm">Kembali</span>
-          </button>
-        </nav>
-      </aside>
+      <AdminSidebar user={user} activeTab={activeTab} setActiveTab={setActiveTab} onLogout={onLogout} menuItems={menuItems} />
 
-      {/* MAIN */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-16 bg-white shadow-sm border-b flex items-center justify-between px-8 shrink-0">
-          <h2 className="text-lg font-bold text-gray-800">Dashboard Analitik Ruangan</h2>
-          <div className="flex items-center gap-3">
-            <div className="text-right hidden md:block">
-              <p className="text-sm font-bold text-gray-800">{user?.name}</p>
-              <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
-            </div>
-            <div className="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center font-bold">
-              {user?.name?.charAt(0).toUpperCase() || "U"}
-            </div>
-          </div>
-        </header>
+        <AdminHeader user={user} title="Dashboard Analitik BAA" />
 
         <div className="flex-1 overflow-y-auto p-8 space-y-6">
 
-          {/* FILTER */}
+          {/* Filter */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-wrap gap-4 items-end justify-between">
             <div className="flex gap-4">
               <div>
                 <label className="block text-xs font-bold text-gray-500 mb-1">Bulan</label>
                 <select value={month} onChange={e => setMonth(parseInt(e.target.value))}
-                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-200 outline-none">
+                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none">
                   {MONTHS.map((m, i) => <option key={i} value={i+1}>{m}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-500 mb-1">Tahun</label>
                 <select value={year} onChange={e => setYear(parseInt(e.target.value))}
-                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-200 outline-none">
+                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none">
                   {[2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
                 </select>
               </div>
@@ -143,14 +439,14 @@ const AnalyticsPage = ({ user, onBack }) => {
             </a>
           </div>
 
-          {/* SUMMARY CARDS */}
+          {/* Summary cards */}
           {data?.summary && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { label: 'Total Booking', value: data.summary.total_booking, color: 'bg-blue-50 text-blue-700 border-blue-100' },
-                { label: 'Disetujui', value: data.summary.total_approved, color: 'bg-green-50 text-green-700 border-green-100' },
-                { label: 'Ditolak', value: data.summary.total_rejected, color: 'bg-red-50 text-red-700 border-red-100' },
-                { label: 'Pending', value: data.summary.total_pending, color: 'bg-yellow-50 text-yellow-700 border-yellow-100' },
+                { label: 'Total Booking', value: data.summary.total_booking,  color: 'bg-blue-50 text-blue-700 border-blue-100' },
+                { label: 'Disetujui',     value: data.summary.total_approved, color: 'bg-green-50 text-green-700 border-green-100' },
+                { label: 'Ditolak',       value: data.summary.total_rejected, color: 'bg-red-50 text-red-700 border-red-100' },
+                { label: 'Pending',       value: data.summary.total_pending,  color: 'bg-yellow-50 text-yellow-700 border-yellow-100' },
               ].map((card, i) => (
                 <div key={i} className={`rounded-xl border p-5 ${card.color}`}>
                   <p className="text-xs font-bold uppercase tracking-wider opacity-70">{card.label}</p>
@@ -160,7 +456,7 @@ const AnalyticsPage = ({ user, onBack }) => {
             </div>
           )}
 
-          {/* BAR CHART */}
+          {/* Bar chart */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
             <h3 className="text-sm font-bold text-gray-700 mb-6">
               Booking per Ruangan — {MONTHS[month-1]} {year}
@@ -174,27 +470,24 @@ const AnalyticsPage = ({ user, onBack }) => {
                 {data.chart_data.map((item, i) => (
                   <div key={i} className="flex items-center gap-4">
                     <div className="w-32 text-xs font-medium text-gray-600 text-right shrink-0">{item.room_name}</div>
-                    <div className="flex-1 bg-gray-100 rounded-full h-6 overflow-hidden">
-                      <div
-                        className="h-full bg-[#990000] rounded-full flex items-center justify-end pr-2 transition-all duration-500"
-                        style={{ width: `${(parseInt(item.total_bookings) / maxBooking) * 100}%` }}
-                      >
+                    <div className="flex-1 bg-gray-100 rounded-full h-7 overflow-hidden">
+                      <div className="h-full bg-[#990000] rounded-full flex items-center justify-end pr-3 transition-all duration-500"
+                        style={{ width: `${(parseInt(item.total_bookings) / maxBooking) * 100}%` }}>
                         <span className="text-[10px] font-bold text-white">{item.total_bookings}</span>
                       </div>
                     </div>
-                    <div className="w-20 text-xs text-gray-500 shrink-0">{item.total_minutes_used} menit</div>
+                    <div className="w-24 text-xs text-gray-500 shrink-0">{item.total_minutes_used} menit</div>
                   </div>
                 ))}
               </div>
             ) : (
               <div className="text-center py-12 text-gray-400">
-                <Icons.Chart />
-                <p className="mt-2 text-sm">Tidak ada data approved untuk periode ini</p>
+                <p className="text-sm">Tidak ada data approved untuk periode ini</p>
               </div>
             )}
           </div>
 
-          {/* POPULARITAS RUANGAN */}
+          {/* Popularitas */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
             <h3 className="text-sm font-bold text-gray-700 mb-4">Pola Penggunaan Ruangan (Top 10)</h3>
             {data?.popularity?.length > 0 ? (
@@ -233,31 +526,18 @@ const AnalyticsPage = ({ user, onBack }) => {
   );
 };
 
-// ===================== FORM PENGAJUAN (dengan Recurring) =====================
+// ===================== FORM PENGAJUAN =====================
 const FormPengajuan = ({ user, onSubmitData, onSubmitRecurring, onBack }) => {
-  const [formData, setFormData] = useState({
-    eventName: '', orgName: '', date: '', room: '',
-    startTime: '', endTime: '', pic: '', phone: '', notes: ''
-  });
-  const [isRecurring, setIsRecurring] = useState(false);
-  const [recurringData, setRecurringData] = useState({
-    day_of_week: 1, start_date: '', end_date: '', frequency: 'weekly'
-  });
-  const [loadingCheck, setLoadingCheck]       = useState(false);
+  const [formData, setFormData] = useState({ eventName: '', orgName: '', date: '', room: '', startTime: '', endTime: '', pic: '', phone: '', notes: '' });
+  const [isRecurring, setIsRecurring]   = useState(false);
+  const [recurringData, setRecurringData] = useState({ day_of_week: 1, start_date: '', end_date: '', frequency: 'weekly' });
+  const [loadingCheck, setLoadingCheck] = useState(false);
   const [availabilityStatus, setAvailabilityStatus] = useState(null);
-  const [formErrors, setFormErrors]           = useState({});
-  const [roomList, setRoomList]               = useState([]);
+  const [formErrors, setFormErrors]     = useState({});
+  const [roomList, setRoomList]         = useState([]);
 
   useEffect(() => {
-    const fetchRooms = async () => {
-      try {
-        const data = await getRooms();
-        setRoomList(data);
-      } catch (error) {
-        console.error("Gagal ambil room:", error);
-      }
-    };
-    fetchRooms();
+    getRooms().then(setRoomList).catch(console.error);
   }, []);
 
   const handleChange = (e) => {
@@ -277,14 +557,11 @@ const FormPengajuan = ({ user, onSubmitData, onSubmitRecurring, onBack }) => {
     setLoadingCheck(true);
     setAvailabilityStatus(null);
     try {
-      const res = await fetch(`https://project-kelompok-5-production.up.railway.app/api/booking/check_availability.php?date=${formData.date}&room=${encodeURIComponent(formData.room)}`);
+      const res  = await fetch(`${BASE_URL}/booking/check_availability.php?date=${formData.date}&room=${encodeURIComponent(formData.room)}`);
       const json = await res.json();
       setAvailabilityStatus(json.status === 'booked' ? 'booked' : 'available');
-    } catch {
-      alert("Gagal terhubung ke server.");
-    } finally {
-      setLoadingCheck(false);
-    }
+    } catch { alert("Gagal terhubung ke server."); }
+    finally { setLoadingCheck(false); }
   };
 
   const validate = () => {
@@ -305,23 +582,17 @@ const FormPengajuan = ({ user, onSubmitData, onSubmitRecurring, onBack }) => {
   const handleSubmit = () => {
     const errors = validate();
     if (Object.keys(errors).length > 0) { setFormErrors(errors); return; }
-
     if (isRecurring) {
       const selectedRoom = roomList.find(r => r.room_name === formData.room);
       onSubmitRecurring({
-        user_id:      user?.user_id || user?.id || 1,
-        room_id:      selectedRoom?.room_id || selectedRoom?.id,
-        event_name:   formData.eventName,
-        organization: formData.orgName,
-        phone:        formData.phone,
-        description:  formData.notes,
-        day_of_week:  parseInt(recurringData.day_of_week),
-        start_date:   recurringData.start_date,
-        end_date:     recurringData.end_date,
-        start_time:   formData.startTime,
-        end_time:     formData.endTime,
-        frequency:    recurringData.frequency,
-        interval_count: 1,
+        user_id: user?.user_id || user?.id || 1,
+        room_id: selectedRoom?.room_id || selectedRoom?.id,
+        event_name: formData.eventName, organization: formData.orgName,
+        phone: formData.phone, description: formData.notes,
+        day_of_week: parseInt(recurringData.day_of_week),
+        start_date: recurringData.start_date, end_date: recurringData.end_date,
+        start_time: formData.startTime, end_time: formData.endTime,
+        frequency: recurringData.frequency, interval_count: 1,
       });
     } else {
       onSubmitData(formData);
@@ -333,65 +604,51 @@ const FormPengajuan = ({ user, onSubmitData, onSubmitRecurring, onBack }) => {
   return (
     <div className="pb-10">
       <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800">Formulir Peminjaman</h2>
-          <p className="text-sm text-gray-500">Lengkapi data untuk mengajukan peminjaman.</p>
-        </div>
-        <button onClick={onBack} className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm font-semibold flex items-center gap-2 transition">
-          <Icons.ChevronLeft /> Kembali
-        </button>
+        <div><h2 className="text-2xl font-bold text-gray-800">Formulir Peminjaman</h2><p className="text-sm text-gray-500">Lengkapi data untuk mengajukan peminjaman.</p></div>
+        <button onClick={onBack} className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm font-semibold flex items-center gap-2 transition"><Icons.ChevronLeft /> Kembali</button>
       </div>
-
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
         <div className="p-8 space-y-8">
 
-          {/* TOGGLE RECURRING */}
+          {/* Toggle Recurring */}
           <div className="flex items-center justify-between p-4 bg-blue-50 rounded-xl border border-blue-100">
             <div className="flex items-center gap-3">
               <Icons.Repeat />
-              <div>
-                <p className="text-sm font-bold text-gray-800">Peminjaman Rutin</p>
-                <p className="text-xs text-gray-500">Aktifkan untuk booking berulang (mingguan)</p>
-              </div>
+              <div><p className="text-sm font-bold text-gray-800">Peminjaman Rutin</p><p className="text-xs text-gray-500">Aktifkan untuk booking berulang</p></div>
             </div>
-            <button
-              onClick={() => setIsRecurring(!isRecurring)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isRecurring ? 'bg-[#990000]' : 'bg-gray-300'}`}
-            >
+            <button onClick={() => setIsRecurring(!isRecurring)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isRecurring ? 'bg-[#990000]' : 'bg-gray-300'}`}>
               <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow ${isRecurring ? 'translate-x-6' : 'translate-x-1'}`} />
             </button>
           </div>
 
-          {/* SECTION I: Detail Kegiatan */}
+          {/* Section I */}
           <section>
             <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider border-b pb-2 mb-4">I. Detail Kegiatan</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Nama Kegiatan *</label>
                 <input type="text" name="eventName" value={formData.eventName} onChange={handleChange}
-                  className={`w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 outline-none ${formErrors.eventName ? 'border-red-500' : 'border-gray-300'}`} />
+                  className={`w-full border rounded-lg px-3 py-2 text-sm outline-none ${formErrors.eventName ? 'border-red-500' : 'border-gray-300'}`} />
                 {formErrors.eventName && <p className="text-red-500 text-xs mt-1">{formErrors.eventName}</p>}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Organisasi *</label>
                 <input type="text" name="orgName" value={formData.orgName} onChange={handleChange}
-                  className={`w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 outline-none ${formErrors.orgName ? 'border-red-500' : 'border-gray-300'}`} />
+                  className={`w-full border rounded-lg px-3 py-2 text-sm outline-none ${formErrors.orgName ? 'border-red-500' : 'border-gray-300'}`} />
                 {formErrors.orgName && <p className="text-red-500 text-xs mt-1">{formErrors.orgName}</p>}
               </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
-                <textarea name="notes" value={formData.notes} onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none h-20 resize-none" />
+                <textarea name="notes" value={formData.notes} onChange={handleChange} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none h-20 resize-none" />
               </div>
             </div>
           </section>
 
-          {/* SECTION II: Waktu & Tempat */}
+          {/* Section II */}
           <section>
             <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider border-b pb-2 mb-4">II. Waktu & Tempat</h3>
             <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-6">
-
-              {/* Kalau BUKAN recurring: tampilkan tanggal biasa */}
               {!isRecurring && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Tanggal *</label>
@@ -400,8 +657,6 @@ const FormPengajuan = ({ user, onSubmitData, onSubmitRecurring, onBack }) => {
                   {formErrors.date && <p className="text-red-500 text-xs mt-1">{formErrors.date}</p>}
                 </div>
               )}
-
-              {/* Kalau recurring: tampilkan hari + rentang tanggal */}
               {isRecurring && (
                 <>
                   <div>
@@ -424,27 +679,21 @@ const FormPengajuan = ({ user, onSubmitData, onSubmitRecurring, onBack }) => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai *</label>
                     <input type="date" name="start_date" value={recurringData.start_date} onChange={handleRecurringChange}
                       className={`w-full border rounded-lg px-3 py-2 text-sm ${formErrors.start_date ? 'border-red-500' : 'border-gray-300'}`} />
-                    {formErrors.start_date && <p className="text-red-500 text-xs mt-1">{formErrors.start_date}</p>}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Tanggal Akhir *</label>
                     <input type="date" name="end_date" value={recurringData.end_date} onChange={handleRecurringChange}
                       className={`w-full border rounded-lg px-3 py-2 text-sm ${formErrors.end_date ? 'border-red-500' : 'border-gray-300'}`} />
-                    {formErrors.end_date && <p className="text-red-500 text-xs mt-1">{formErrors.end_date}</p>}
                   </div>
                 </>
               )}
-
-              {/* Ruangan */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Ruangan *</label>
                 <div className="flex gap-2">
                   <select name="room" value={formData.room} onChange={handleChange}
                     className={`flex-1 border rounded-lg px-3 py-2 text-sm bg-white ${formErrors.room ? 'border-red-500' : 'border-gray-300'}`}>
                     <option value="">-- Pilih Ruangan --</option>
-                    {roomList.map((r) => (
-                      <option key={r.room_id || r.id} value={r.room_name}>{r.room_name}</option>
-                    ))}
+                    {roomList.map((r) => <option key={r.room_id || r.id} value={r.room_name}>{r.room_name}</option>)}
                   </select>
                   {!isRecurring && (
                     <button onClick={handleCheckAvailability} disabled={loadingCheck}
@@ -459,13 +708,10 @@ const FormPengajuan = ({ user, onSubmitData, onSubmitRecurring, onBack }) => {
                   {availabilityStatus === 'booked'    && <p className="text-xs text-red-600 font-bold flex items-center gap-1"><Icons.X /> Penuh / Booked</p>}
                 </div>
               </div>
-
-              {/* Jam */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Jam Mulai *</label>
                 <input type="time" name="startTime" value={formData.startTime} onChange={handleChange}
                   className={`w-full border rounded-lg px-3 py-2 text-sm ${formErrors.startTime ? 'border-red-500' : 'border-gray-300'}`} />
-                {formErrors.startTime && <p className="text-red-500 text-xs mt-1">{formErrors.startTime}</p>}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Jam Selesai</label>
@@ -475,7 +721,7 @@ const FormPengajuan = ({ user, onSubmitData, onSubmitRecurring, onBack }) => {
             </div>
           </section>
 
-          {/* SECTION III: Kontak */}
+          {/* Section III */}
           <section>
             <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider border-b pb-2 mb-4">III. Kontak</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -493,23 +739,16 @@ const FormPengajuan = ({ user, onSubmitData, onSubmitRecurring, onBack }) => {
             </div>
           </section>
 
-          {/* Info recurring preview */}
           {isRecurring && recurringData.start_date && recurringData.end_date && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-800">
               <p className="font-bold mb-1">📅 Preview Recurring</p>
-              <p>Sistem akan membuat booking setiap <strong>{DAYS[recurringData.day_of_week]}</strong> dari <strong>{recurringData.start_date}</strong> sampai <strong>{recurringData.end_date}</strong>.</p>
+              <p>Booking setiap <strong>{DAYS[recurringData.day_of_week]}</strong> dari <strong>{recurringData.start_date}</strong> sampai <strong>{recurringData.end_date}</strong>.</p>
             </div>
           )}
 
-          <div className="pt-6 border-t border-gray-100 flex justify-end gap-4">
-            <button
-              onClick={() => {
-                setFormData({ eventName: '', orgName: '', date: '', room: '', startTime: '', endTime: '', pic: '', phone: '', notes: '' });
-                setRecurringData({ day_of_week: 1, start_date: '', end_date: '', frequency: 'weekly' });
-                setIsRecurring(false);
-              }}
-              className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 text-sm font-bold hover:bg-gray-50 transition"
-            >Reset</button>
+          <div className="pt-6 border-t flex justify-end gap-4">
+            <button onClick={() => { setFormData({ eventName:'',orgName:'',date:'',room:'',startTime:'',endTime:'',pic:'',phone:'',notes:'' }); setIsRecurring(false); }}
+              className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 text-sm font-bold hover:bg-gray-50 transition">Reset</button>
             <button onClick={handleSubmit}
               className="px-8 py-2.5 rounded-lg bg-[#990000] text-white font-bold hover:bg-[#7a0000] transition flex items-center gap-2">
               {isRecurring && <Icons.Repeat />}
@@ -526,20 +765,13 @@ const FormPengajuan = ({ user, onSubmitData, onSubmitRecurring, onBack }) => {
 const StatusTable = ({ bookings, onBack, onCancel }) => (
   <div className="pb-10">
     <div className="flex items-center justify-between mb-6">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-800">Status Pengajuan</h2>
-        <p className="text-sm text-gray-500">Pantau status persetujuan peminjaman ruangan Anda.</p>
-      </div>
-      <button onClick={onBack} className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm font-semibold flex items-center gap-2 transition">
-        <Icons.ChevronLeft /> Kembali
-      </button>
+      <div><h2 className="text-2xl font-bold text-gray-800">Status Pengajuan</h2><p className="text-sm text-gray-500">Pantau status persetujuan peminjaman ruangan Anda.</p></div>
+      <button onClick={onBack} className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm font-semibold flex items-center gap-2 transition"><Icons.ChevronLeft /> Kembali</button>
     </div>
     <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-      <div className="p-4 border-b bg-gray-50 flex justify-between items-center">
-        <p className="text-xs text-gray-500">Total: <span className="font-bold text-gray-900">{bookings.length}</span></p>
-      </div>
+      <div className="p-4 border-b bg-gray-50"><p className="text-xs text-gray-500">Total: <span className="font-bold text-gray-900">{bookings.length}</span></p></div>
       <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+        <table className="w-full text-left">
           <thead className="bg-gray-100 text-gray-600 text-xs uppercase tracking-wider">
             <tr>
               <th className="px-6 py-4 border-b">ID</th>
@@ -567,20 +799,12 @@ const StatusTable = ({ bookings, onBack, onCancel }) => (
                 </td>
                 <td className="px-6 py-4">
                   {item.recurring_group_id ? (
-                    <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 w-fit">
-                      <Icons.Repeat /> Rutin
-                    </span>
+                    <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 w-fit"><Icons.Repeat /> Rutin</span>
                   ) : (
                     <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-[10px] font-bold w-fit">Biasa</span>
                   )}
                 </td>
-                <td className="px-6 py-4 text-center">
-                  <span className={`inline-flex px-3 py-1 rounded-full text-[10px] font-bold uppercase border ${
-                    item.status === 'Disetujui' ? 'bg-green-100 text-green-700 border-green-200' :
-                    item.status === 'Ditolak'   ? 'bg-red-100 text-red-700 border-red-200' :
-                    'bg-yellow-100 text-yellow-700 border-yellow-200'
-                  }`}>{item.status}</span>
-                </td>
+                <td className="px-6 py-4 text-center"><StatusBadge status={item.status?.toLowerCase() === 'disetujui' ? 'approved' : item.status?.toLowerCase() === 'ditolak' ? 'rejected' : 'pending'} /></td>
                 <td className="px-6 py-4 text-center">
                   <button onClick={() => onCancel(item.id)}
                     className="text-red-500 hover:text-white hover:bg-red-600 border border-red-200 px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1 mx-auto transition">
@@ -598,16 +822,16 @@ const StatusTable = ({ bookings, onBack, onCancel }) => (
 
 // ===================== PEMINJAMAN PAGE =====================
 const PeminjamanPage = ({ user, onBackToMenu, onToDashboard }) => {
-  const [activeTab, setActiveTab]         = useState('pengajuan');
-  const [bookings, setBookings]           = useState([]);
-  const [isSubmitting, setIsSubmitting]   = useState(false);
+  const [activeTab, setActiveTab]           = useState('pengajuan');
+  const [bookings, setBookings]             = useState([]);
+  const [isSubmitting, setIsSubmitting]     = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [successMsg, setSuccessMsg]       = useState('');
+  const [successMsg, setSuccessMsg]         = useState('');
 
   const fetchBookings = async () => {
     try {
       const userId = user?.id || user?.user_id || 0;
-      const res = await fetch(`https://project-kelompok-5-production.up.railway.app/api/booking/list.php?user_id=${userId}`);
+      const res  = await fetch(`${BASE_URL}/booking/list.php?user_id=${userId}`);
       const data = await res.json();
       if (Array.isArray(data)) setBookings(data);
     } catch (e) { console.error(e); }
@@ -619,15 +843,12 @@ const PeminjamanPage = ({ user, onBackToMenu, onToDashboard }) => {
     setIsSubmitting(true);
     const payload = {
       user_id: user?.id || user?.user_id || 1,
-      event_name: formData.eventName,
-      organization: formData.orgName,
-      pic: formData.pic,
-      phone: formData.phone,
+      event_name: formData.eventName, organization: formData.orgName,
+      pic: formData.pic, phone: formData.phone,
       event_description: formData.notes || "",
       start_datetime: `${formData.date} ${formData.startTime}`,
       end_datetime: `${formData.date} ${formData.endTime || formData.startTime}`,
-      rooms: [formData.room],
-      inventory: []
+      rooms: [formData.room], inventory: []
     };
     try {
       const data = await createBooking(payload);
@@ -635,14 +856,9 @@ const PeminjamanPage = ({ user, onBackToMenu, onToDashboard }) => {
         setSuccessMsg("Data telah disubmit. Silakan pantau status di tabel ini.");
         setShowSuccessModal(true);
         fetchBookings();
-      } else {
-        alert("Gagal: " + (data.message || "Unknown error"));
-      }
-    } catch (e) {
-      alert("Koneksi Gagal.");
-    } finally {
-      setIsSubmitting(false);
-    }
+      } else { alert("Gagal: " + (data.message || "Unknown error")); }
+    } catch { alert("Koneksi Gagal."); }
+    finally { setIsSubmitting(false); }
   };
 
   const handleSubmitRecurring = async (payload) => {
@@ -654,41 +870,31 @@ const PeminjamanPage = ({ user, onBackToMenu, onToDashboard }) => {
         setShowSuccessModal(true);
         fetchBookings();
       } else {
-        if (data.conflicts) {
-          alert("Konflik jadwal pada tanggal: " + data.conflicts.join(', '));
-        } else {
-          alert("Gagal: " + (data.message || "Unknown error"));
-        }
+        if (data.conflicts) alert("Konflik jadwal pada: " + data.conflicts.join(', '));
+        else alert("Gagal: " + (data.message || "Unknown error"));
       }
-    } catch (e) {
-      alert("Koneksi Gagal.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    } catch { alert("Koneksi Gagal."); }
+    finally { setIsSubmitting(false); }
   };
 
   const handleCancelBooking = async (id) => {
-    if (!id) return alert("ID tidak valid.");
-    if (!window.confirm(`Yakin ingin menghapus booking #${id}?`)) return;
+    if (!id || !window.confirm(`Yakin ingin menghapus booking #${id}?`)) return;
     try {
-      const res  = await fetch("https://project-kelompok-5-production.up.railway.app/api/booking/delete.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res  = await fetch(`${BASE_URL}/booking/delete.php`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id })
       });
       const data = await res.json();
-      if (data.status === "success") { fetchBookings(); }
+      if (data.status === "success") fetchBookings();
       else alert("Gagal: " + data.message);
-    } catch (e) { alert("Gagal terhubung."); }
+    } catch { alert("Gagal terhubung."); }
   };
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden font-sans">
       <aside className="w-64 bg-[#7a1e1e] text-white flex flex-col shrink-0 shadow-2xl z-20">
         <div className="p-6 border-b border-red-900/50 flex items-center gap-3 bg-[#601010]">
-          <div className="bg-white p-1.5 rounded shadow-sm">
-            <img src={LOGO_PRIMARY_URL} onError={handleLogoError} alt="Logo" className="w-8 h-auto" />
-          </div>
+          <div className="bg-white p-1.5 rounded shadow-sm"><img src={LOGO_PRIMARY_URL} onError={handleLogoError} alt="Logo" className="w-8 h-auto" /></div>
           <div><h1 className="font-bold text-sm tracking-wide">Biro Kemahasiswaan</h1><p className="text-[10px] text-red-200">Universitas Bakrie</p></div>
         </div>
         <nav className="flex-1 overflow-y-auto py-6 space-y-1">
@@ -708,7 +914,6 @@ const PeminjamanPage = ({ user, onBackToMenu, onToDashboard }) => {
           </button>
         </nav>
       </aside>
-
       <main className="flex-1 flex flex-col h-full overflow-hidden">
         <header className="h-16 bg-white shadow-sm border-b flex items-center justify-between px-8 z-10 shrink-0">
           <div className="text-sm text-gray-500">
@@ -726,7 +931,6 @@ const PeminjamanPage = ({ user, onBackToMenu, onToDashboard }) => {
             </div>
           </div>
         </header>
-
         <div className="flex-1 overflow-y-auto p-8">
           {activeTab === "pengajuan" ? (
             <FormPengajuan user={user} onSubmitData={handleSubmit} onSubmitRecurring={handleSubmitRecurring} onBack={onBackToMenu} />
@@ -735,14 +939,10 @@ const PeminjamanPage = ({ user, onBackToMenu, onToDashboard }) => {
           )}
         </div>
       </main>
-
       {isSubmitting && <LoadingOverlay message="Mengirim Data..." />}
       {showSuccessModal && (
-        <ModalSuccess
-          title="Berhasil!"
-          message={successMsg}
-          onClose={() => { setShowSuccessModal(false); setActiveTab('status'); }}
-        />
+        <ModalSuccess title="Berhasil!" message={successMsg}
+          onClose={() => { setShowSuccessModal(false); setActiveTab('status'); }} />
       )}
     </div>
   );
@@ -757,29 +957,20 @@ const BimaPage = ({ user, onBack, onNavigate }) => {
     { label: "Layanan Psikologi",           disabled: true },
     { label: "Student Exit Letter",         disabled: true },
     { label: "Peminjaman Fasilitas Kampus", action: 'peminjaman', highlight: true },
-    { label: "Analytics Ruangan",           action: 'analytics',  highlight: false, special: true },
+    { label: "Analytics Ruangan",           action: 'analytics',  special: true },
     { label: "Buku Panduan",               disabled: true },
     { label: "Surat Keterangan Aktif",     disabled: true },
   ];
-
   return (
     <div className="min-h-screen bg-white font-sans flex flex-col">
       <div className="h-2 bg-[#1a1a1a] w-full"></div>
       <header className="bg-[#990000] px-8 py-4 shadow-lg flex justify-between items-center sticky top-0 z-30">
         <div className="flex items-center gap-4">
-          <div className="bg-white p-1.5 rounded shadow-sm">
-            <img src={LOGO_PRIMARY_URL} onError={handleLogoError} alt="Logo" className="h-10 w-auto" />
-          </div>
-          <div className="text-white">
-            <h1 className="text-xl font-bold tracking-wide">Biro Kemahasiswaan</h1>
-            <p className="text-xs text-white/80">Integrated System</p>
-          </div>
+          <div className="bg-white p-1.5 rounded shadow-sm"><img src={LOGO_PRIMARY_URL} onError={handleLogoError} alt="Logo" className="h-10 w-auto" /></div>
+          <div className="text-white"><h1 className="text-xl font-bold tracking-wide">Biro Kemahasiswaan</h1><p className="text-xs text-white/80">Integrated System</p></div>
         </div>
-        <button onClick={onBack} className="text-white/90 hover:text-white border border-white/30 hover:bg-white/10 px-4 py-2 rounded text-sm font-medium transition">
-          Kembali ke Dashboard
-        </button>
+        <button onClick={onBack} className="text-white/90 hover:text-white border border-white/30 hover:bg-white/10 px-4 py-2 rounded text-sm font-medium transition">Kembali ke Dashboard</button>
       </header>
-
       <div className="flex-1 max-w-7xl mx-auto w-full p-8 md:p-12">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-extrabold text-gray-900 mb-3">Layanan Kemahasiswaan</h2>
@@ -793,12 +984,10 @@ const BimaPage = ({ user, onBack, onNavigate }) => {
                 ${item.highlight ? 'bg-[#1a1a1a] border-black' : item.special ? 'bg-blue-700 border-blue-800' : 'bg-white border-gray-100 hover:border-gray-300'}`}>
               <h3 className={`font-bold text-lg ${item.highlight || item.special ? 'text-white' : 'text-gray-800'}`}>{item.label}</h3>
               {item.disabled && <span className="absolute top-3 right-3 text-[10px] bg-gray-200 text-gray-500 px-2 py-0.5 rounded">Soon</span>}
-              {item.special && <span className="mt-2 text-xs text-blue-200 flex items-center gap-1"><Icons.Chart /> Lihat statistik ruangan</span>}
             </div>
           ))}
         </div>
       </div>
-
       <footer className="bg-[#1a1a1a] text-white py-8 border-t border-gray-800">
         <div className="max-w-7xl mx-auto px-8 flex justify-between items-center">
           <p className="text-xs text-gray-500">&copy; 2025 Universitas Bakrie</p>
@@ -808,7 +997,7 @@ const BimaPage = ({ user, onBack, onNavigate }) => {
   );
 };
 
-// ===================== DASHBOARD =====================
+// ===================== DASHBOARD MAHASISWA =====================
 const Dashboard = ({ user, onLogout, onNavigate }) => {
   const modules = [
     { title: "BIG",                   color: "bg-[#c0392b]" },
@@ -818,21 +1007,16 @@ const Dashboard = ({ user, onLogout, onNavigate }) => {
     { title: "Info PMB",              color: "bg-[#f39c12]" },
     { title: "BIMA (Kemahasiswaan)",  color: "bg-[#800000]", action: 'bima' },
   ];
-
   return (
     <div className="min-h-screen bg-gray-100 font-sans flex items-center justify-center p-4 md:p-8">
       <div className="w-full max-w-6xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col min-h-[80vh]">
         <div className="bg-[#990000] text-white p-6 flex justify-between items-center shadow-lg">
           <div className="flex items-center gap-5">
-            <div className="bg-white p-2 rounded-lg shadow-md">
-              <img src={LOGO_PRIMARY_URL} onError={handleLogoError} alt="Logo UB" className="h-10 w-auto" />
-            </div>
+            <div className="bg-white p-2 rounded-lg shadow-md"><img src={LOGO_PRIMARY_URL} onError={handleLogoError} alt="Logo UB" className="h-10 w-auto" /></div>
             <div><h1 className="font-extrabold text-2xl tracking-wide uppercase">BIG 2.0</h1><p className="text-xs text-red-200 tracking-wider">Bakrie Information Gateway</p></div>
           </div>
           <div className="flex items-center gap-4">
-            <div className="hidden md:block text-right">
-              <p className="text-sm font-bold">Halo, {user?.name}</p>
-            </div>
+            <div className="hidden md:block text-right"><p className="text-sm font-bold">Halo, {user?.name}</p></div>
             <button onClick={onLogout} className="bg-white/10 hover:bg-white hover:text-[#990000] text-white border border-white/30 px-5 py-2 rounded-lg text-sm font-bold transition flex items-center gap-2">
               <Icons.Logout /> Logout
             </button>
@@ -848,9 +1032,7 @@ const Dashboard = ({ user, onLogout, onNavigate }) => {
               <div key={idx}
                 onClick={() => modul.action ? onNavigate(modul.action) : alert("Maintenance.")}
                 className={`${modul.color} group relative h-48 rounded-xl shadow-lg cursor-pointer transform hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col justify-between p-6`}>
-                <div className="relative z-10">
-                  <h3 className="text-white text-xl font-bold">{modul.title}</h3>
-                </div>
+                <div className="relative z-10"><h3 className="text-white text-xl font-bold">{modul.title}</h3></div>
               </div>
             ))}
           </div>
@@ -863,13 +1045,12 @@ const Dashboard = ({ user, onLogout, onNavigate }) => {
 
 // ===================== LOGIN PAGE =====================
 const LoginPage = ({ onLogin, loading }) => {
-  const [user, setUser] = useState('');
-  const [pass, setPass] = useState('');
-  const handleSubmit = (e) => { e.preventDefault(); onLogin(user, pass); };
-
+  const [email, setEmail] = useState('');
+  const [pass, setPass]   = useState('');
+  const handleSubmit = (e) => { e.preventDefault(); onLogin(email, pass); };
   return (
     <div className="min-h-screen flex bg-white font-sans">
-      <div className="hidden md:flex md:w-[60%] relative bg-slate-900 flex-col justify-between text-white overflow-hidden">
+      <div className="hidden md:flex md:w-[60%] relative bg-slate-900 flex-col text-white overflow-hidden">
         <div className="absolute inset-0"><div className="absolute inset-0 bg-gradient-to-br from-[#990000] via-[#5e0d0d] to-black opacity-90"></div></div>
         <div className="relative z-10 p-16 flex flex-col h-full justify-between">
           <div>
@@ -893,11 +1074,13 @@ const LoginPage = ({ onLogin, loading }) => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">Email</label>
-              <input type="text" required className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none" placeholder="email@student.bakrie.ac.id" value={user} onChange={(e) => setUser(e.target.value)} />
+              <input type="email" required className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+                placeholder="email@bakrie.ac.id" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">Password</label>
-              <input type="password" required className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none" placeholder="••••••••" value={pass} onChange={(e) => setPass(e.target.value)} />
+              <input type="password" required className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#990000] outline-none"
+                placeholder="••••••••" value={pass} onChange={(e) => setPass(e.target.value)} />
             </div>
             <button type="submit" disabled={loading}
               className="w-full bg-[#990000] hover:bg-[#7a0000] text-white font-bold py-3.5 rounded-lg shadow-lg transition">
@@ -913,43 +1096,54 @@ const LoginPage = ({ onLogin, loading }) => {
 
 // ===================== APP =====================
 function App() {
-  const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem("user");
-    return saved ? JSON.parse(saved) : null;
-  });
-  const [loading, setLoading]           = useState(false);
-  const [currentPage, setCurrentPage]   = useState('dashboard');
+  const [user, setUser]         = useState(() => { const s = localStorage.getItem("user"); return s ? JSON.parse(s) : null; });
+  const [loading, setLoading]   = useState(false);
+  const [currentPage, setCurrentPage] = useState('dashboard');
 
-  const handleLogin = async (username, password) => {
+  const handleLogin = async (email, password) => {
     setLoading(true);
     try {
-      const res = await login(username, password);
+      const res = await login(email, password);
       if (res.status) {
         localStorage.setItem("user", JSON.stringify(res.user));
         setUser(res.user);
-        setCurrentPage("dashboard");
-      } else {
-        alert(res.message || "Login gagal");
-      }
-    } catch {
-      alert("Gagal konek ke server");
-    } finally {
-      setLoading(false);
-    }
+        setCurrentPage('dashboard');
+      } else { alert(res.message || "Login gagal"); }
+    } catch { alert("Gagal konek ke server"); }
+    finally { setLoading(false); }
   };
 
   const handleLogout = () => {
     if (window.confirm("Keluar dari aplikasi?")) {
       localStorage.removeItem("user");
       setUser(null);
-      setCurrentPage("dashboard");
+      setCurrentPage('dashboard');
     }
   };
 
   if (!user) return <LoginPage onLogin={handleLogin} loading={loading} />;
-  if (currentPage === 'analytics')  return <AnalyticsPage  user={user} onBack={() => setCurrentPage('bima')} />;
-  if (currentPage === 'peminjaman') return <PeminjamanPage user={user} onBackToMenu={() => setCurrentPage('bima')} onToDashboard={() => setCurrentPage('dashboard')} />;
-  if (currentPage === 'bima')       return <BimaPage       user={user} onBack={() => setCurrentPage('dashboard')} onNavigate={setCurrentPage} />;
+
+  const role = user?.role;
+
+  // Routing berdasarkan role
+  if (role === 'baa') {
+    return <DashboardBAA user={user} onLogout={handleLogout} />;
+  }
+
+  if (role === 'bima' || role === 'marketing') {
+    return <DashboardAdmin user={user} onLogout={handleLogout} />;
+  }
+
+  if (role === 'ga') {
+    // GA bisa akses keduanya, default ke admin tapi ada tombol ke analytics
+    if (currentPage === 'analytics') return <DashboardBAA user={user} onLogout={handleLogout} />;
+    return <DashboardAdmin user={user} onLogout={handleLogout} />;
+  }
+
+  // Mahasiswa/dosen
+  if (currentPage === 'analytics')  return <DashboardBAA    user={user} onBack={() => setCurrentPage('bima')} />;
+  if (currentPage === 'peminjaman') return <PeminjamanPage  user={user} onBackToMenu={() => setCurrentPage('bima')} onToDashboard={() => setCurrentPage('dashboard')} />;
+  if (currentPage === 'bima')       return <BimaPage        user={user} onBack={() => setCurrentPage('dashboard')} onNavigate={setCurrentPage} />;
   return <Dashboard user={user} onLogout={handleLogout} onNavigate={setCurrentPage} />;
 }
 
