@@ -366,8 +366,8 @@ refactor: refactor kode
 
 ## 👨‍💻 Authors
 
-**Kelompok 5 — Universitas Bakrie**
-Program Studi Teknik Informatika — 2025/2026
+**Kelompok 5 — Universitas Bakrie**  
+Program Studi Teknik Informatika — Rekayasa Perangkat Lunak — 2025/2026
 
 | Nama | NIM |
 |---|---|
