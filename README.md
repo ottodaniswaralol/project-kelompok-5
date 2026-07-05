@@ -11,8 +11,8 @@
 
 **UBakrie Space** adalah aplikasi web berbasis arsitektur *decoupled* yang mendigitalisasi proses peminjaman ruang kelas dan inventaris di Universitas Bakrie. Sistem ini menggantikan proses manual berbasis formulir kertas dengan platform digital terpadu yang dapat diakses dari browser manapun.
 
-🔗 **Live Demo:** [https://room-booking-group-5.netlify.app](https://room-booking-group-5.netlify.app)  
-🔗 **Backend API:** [https://project-kelompok-5-production.up.railway.app/api](https://project-kelompok-5-production.up.railway.app/api)
+🔗 **Live Demo:** [https://room-booking-group-5.netlify.app](https://room-booking-group-5.netlify.app)
+🔗 **Backend API:** [https://project-kelompok-5-production.up.railway.app](https://project-kelompok-5-production.up.railway.app)
 
 ---
 
@@ -60,14 +60,14 @@ Mahasiswa/Dosen → Marketing → BIMA → GA → Selesai
 │         React + Vite + Tailwind CSS              │
 │              (Netlify CDN)                       │
 └──────────────────────┬──────────────────────────┘
-                       │ HTTP REST API (JSON)
+                       │ HTTP JSON over HTTPS
                        │ + CORS Header
 ┌──────────────────────▼──────────────────────────┐
 │            BUSINESS LOGIC LAYER                  │
-│            PHP Native 8.x (REST API)            │
+│         PHP 8.x Native (tanpa framework)        │
 │               (Railway Cloud)                    │
 └──────────────────────┬──────────────────────────┘
-                       │ PDO + Prepared Statement
+                       │ mysqli + Prepared Statement
 ┌──────────────────────▼──────────────────────────┐
 │                 DATA LAYER                       │
 │             MySQL Relational DB                  │
@@ -75,12 +75,14 @@ Mahasiswa/Dosen → Marketing → BIMA → GA → Selesai
 └─────────────────────────────────────────────────┘
 ```
 
+> Backend dibangun menggunakan **PHP Native 8.x tanpa framework**. Setiap endpoint adalah file `.php` tersendiri yang menerima request HTTP (GET/POST), memproses data, dan mengembalikan response dalam format JSON. Pola ini mengikuti prinsip REST API secara manual — tanpa library tambahan seperti Laravel, Slim, atau Lumen.
+
 ### Tech Stack
 
 | Layer | Teknologi | Hosting |
 |---|---|---|
 | Frontend | React 18 + Vite + Tailwind CSS | Netlify |
-| Backend | PHP 8.x Native (REST API) | Railway |
+| Backend | PHP 8.x Native (tanpa framework) | Railway |
 | Database | MySQL 8.x | Railway |
 | PDF Export | jsPDF + jsPDF-AutoTable | (client-side) |
 
@@ -138,12 +140,6 @@ cd client
 npm install
 ```
 
-Buat file `.env` di folder `client/`:
-
-```env
-VITE_API_URL=https://project-kelompok-5-production.up.railway.app/api
-```
-
 Jalankan development server:
 
 ```bash
@@ -183,10 +179,10 @@ mysqli_set_charset($conn, "utf8mb4");
 Import file SQL ke MySQL:
 
 ```bash
-mysql -u root -p room_booking < database/room_booking_final_v2.sql
+mysql -u root -p room_booking < database/Room_Booking_Update.sql
 ```
 
-Atau buka file `database/room_booking_final_v2.sql` di DBeaver/phpMyAdmin dan execute.
+Atau buka file `database/Room_Booking_Update.sql` di DBeaver/phpMyAdmin dan execute.
 
 ---
 
@@ -194,46 +190,44 @@ Atau buka file `database/room_booking_final_v2.sql` di DBeaver/phpMyAdmin dan ex
 
 ```
 project-kelompok-5/
-├── client/                      # Frontend React
+├── client/                          # Frontend React
 │   ├── src/
-│   │   ├── App.jsx              # Main component + routing
+│   │   ├── App.jsx                  # Main component + routing
 │   │   ├── services/
-│   │   │   └── api.js           # API service layer
+│   │   │   └── api.js               # API service layer
 │   │   └── main.jsx
 │   ├── public/
 │   │   └── favicon.svg
 │   ├── package.json
 │   └── vite.config.js
 │
-├── server/                      # Backend PHP
+├── server/                          # Backend PHP
 │   ├── api/
 │   │   ├── auth/
-│   │   │   ├── login.php        # POST - Login user
-│   │   │   └── logout.php
+│   │   │   └── login.php            # POST - Login user
 │   │   ├── booking/
-│   │   │   ├── create.php       # POST - Buat booking biasa
-│   │   │   ├── create_recurring.php  # POST - Buat recurring booking
-│   │   │   ├── check_availability.php  # GET - Cek ketersediaan ruang
-│   │   │   ├── list.php         # GET - List booking per user
-│   │   │   ├── all.php          # GET - Semua booking (admin)
-│   │   │   ├── detail.php       # GET - Detail booking
-│   │   │   └── delete.php       # POST - Hapus/batalkan booking
+│   │   │   ├── create.php           # POST - Buat booking biasa
+│   │   │   ├── create_recurring.php # POST - Buat recurring booking
+│   │   │   ├── check_availability.php # GET - Cek ketersediaan ruang
+│   │   │   ├── list.php             # GET - List booking per user
+│   │   │   ├── all.php              # GET - Semua booking (admin)
+│   │   │   └── delete.php           # POST - Hapus/batalkan booking
 │   │   ├── approval/
-│   │   │   ├── list.php         # GET - List approval per role
-│   │   │   ├── approve.php      # POST - Setujui booking
-│   │   │   └── reject.php       # POST - Tolak booking
+│   │   │   ├── list.php             # GET - List approval per role
+│   │   │   ├── approve.php          # POST - Setujui booking
+│   │   │   └── reject.php           # POST - Tolak booking
 │   │   ├── rooms/
-│   │   │   └── list.php         # GET - List semua ruangan
+│   │   │   └── list.php             # GET - List semua ruangan
 │   │   ├── feedback/
-│   │   │   └── submit.php       # POST - Submit feedback
+│   │   │   └── submit.php           # POST - Submit feedback
 │   │   └── reports/
-│   │       ├── analytics.php    # GET - Data analytics dashboard
-│   │       └── export.php       # GET - Export CSV/PDF
+│   │       ├── analytics.php        # GET - Data analytics dashboard
+│   │       └── export.php           # GET - Export CSV/PDF
 │   └── config/
-│       └── database.php         # Konfigurasi koneksi database
+│       └── database.php             # Konfigurasi koneksi database
 │
 └── database/
-    └── Room_Booking_Update.sql  # Full database schema + seed data
+    └── Room_Booking_Update.sql      # Full database schema + seed data
 ```
 
 ---
@@ -263,14 +257,12 @@ project-kelompok-5/
 
 ### Testing Manual via Postman
 
-Import collection Postman dan test endpoint satu per satu:
-
 **Login:**
 ```json
 POST /api/auth/login.php
 {
-  "username": "Otto@student.bakrie.ac.id",
-  "password": "password123"
+  "username": "Amanda@student.bakrie.ac.id",
+  "password": "123456789"
 }
 ```
 
@@ -301,7 +293,7 @@ GET /api/reports/analytics.php?month=7&year=2026
 
 | Email | Password | Role |
 |---|---|---|
-| `Otto@student.bakrie.ac.id` | `123456789` | Mahasiswa |
+| `Amanda@student.bakrie.ac.id` | `123456789` | Mahasiswa |
 | `budi@bakrie.ac.id` | `123456789` | Dosen |
 | `bima@bakrie.ac.id` | `123456789` | BIMA |
 | `marketing@bakrie.ac.id` | `123456789` | Marketing |
@@ -320,8 +312,7 @@ GET /api/reports/analytics.php?month=7&year=2026
    - **Base directory:** `client`
    - **Build command:** `npm run build`
    - **Publish directory:** `client/dist`
-4. Tambahkan environment variable `VITE_API_URL`
-5. Deploy otomatis setiap push ke branch `main`
+4. Deploy otomatis setiap push ke branch `main`
 
 ### Backend — Railway
 
@@ -329,7 +320,7 @@ GET /api/reports/analytics.php?month=7&year=2026
 2. Connect ke GitHub repo
 3. Set root directory ke `server/`
 4. Tambahkan MySQL service
-5. Railway otomatis inject environment variables database:
+5. Railway otomatis inject environment variables:
    - `MYSQLHOST`, `MYSQLUSER`, `MYSQLPASSWORD`, `MYSQLDATABASE`, `MYSQLPORT`
 
 ---
@@ -374,16 +365,14 @@ refactor: refactor kode
 
 ## 👨‍💻 Authors
 
-**Kelompok 5 — Universitas Bakrie**  
-Mata Kuliah Rekayasa Perangkat Lunak
-
+**Kelompok 5 — Universitas Bakrie**
 Program Studi Teknik Informatika — 2025/2026
 
-| Nama | NIM |  
-|---|---|---|
-| Amanda | 1232001047 | 
-| Najwa | 1232001010 | 
-| Ivan | 1232001036 | 
+| Nama | NIM |
+|---|---|
+| Amanda | 1232001047 |
+| Najwa | 1232001010 |
+| Ivan | 1232001036 |
 | Fadil | 1232001049 |
 | Otto Daniswara | 1232001040 |
 | Nofita | 1222001019 |
