@@ -57,22 +57,22 @@ Mahasiswa/Dosen → Marketing → BIMA → GA → Selesai
 
 ```
 ┌─────────────────────────────────────────────────┐
-│              PRESENTATION LAYER                  │
-│         React + Vite + Tailwind CSS              │
-│              (Netlify CDN)                       │
+│              PRESENTATION LAYER                 │
+│         React + Vite + Tailwind CSS             │
+│              (Netlify CDN)                      │
 └──────────────────────┬──────────────────────────┘
                        │ HTTP JSON over HTTPS
                        │ + CORS Header
 ┌──────────────────────▼──────────────────────────┐
-│            BUSINESS LOGIC LAYER                  │
+│            BUSINESS LOGIC LAYER                 │
 │         PHP 8.x Native (tanpa framework)        │
-│               (Railway Cloud)                    │
+│               (Railway Cloud)                   │
 └──────────────────────┬──────────────────────────┘
                        │ mysqli + Prepared Statement
 ┌──────────────────────▼──────────────────────────┐
-│                 DATA LAYER                       │
-│             MySQL Relational DB                  │
-│               (Railway Cloud)                    │
+│                 DATA LAYER                      │
+│             MySQL Relational DB                 │
+│               (Railway Cloud)                   │
 └─────────────────────────────────────────────────┘
 ```
 
