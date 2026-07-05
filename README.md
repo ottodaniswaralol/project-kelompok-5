@@ -371,12 +371,12 @@ Program Studi Teknik Informatika — Rekayasa Perangkat Lunak — 2025/2026
 
 | Nama | NIM |
 |---|---|
-| Amanda | 1232001047 |
-| Najwa | 1232001010 |
-| Ivan | 1232001036 |
-| Fadil | 1232001049 |
+| Amanda Junita Maha Dewi | 1232001047 |
+| Najwa Naela Fawwaz | 1232001010 |
+| Yohanes Stevandrew | 1232001036 |
+| Fadillah Putra Gunawan | 1232001049 |
 | Otto Daniswara | 1232001040 |
-| Nofita | 1222001019 |
+| Nofita Munir | 1222001019 |
 
 ---
 
