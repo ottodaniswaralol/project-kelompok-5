@@ -233,7 +233,7 @@ project-kelompok-5/
 │       └── database.php         # Konfigurasi koneksi database
 │
 └── database/
-    └── room_booking_final_v2.sql  # Full database schema + seed data
+    └── Room_Booking_Update.sql  # Full database schema + seed data
 ```
 
 ---
