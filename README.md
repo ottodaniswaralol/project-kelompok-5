@@ -301,12 +301,12 @@ GET /api/reports/analytics.php?month=7&year=2026
 
 | Email | Password | Role |
 |---|---|---|
-| `Otto@student.bakrie.ac.id` | `password123` | Mahasiswa |
-| `budi@bakrie.ac.id` | `password123` | Dosen |
-| `bima@bakrie.ac.id` | `password123` | BIMA |
-| `marketing@bakrie.ac.id` | `password123` | Marketing |
-| `ga@bakrie.ac.id` | `password123` | GA |
-| `baa@bakrie.ac.id` | `password123` | BAA |
+| `Otto@student.bakrie.ac.id` | `123456789` | Mahasiswa |
+| `budi@bakrie.ac.id` | `123456789` | Dosen |
+| `bima@bakrie.ac.id` | `123456789` | BIMA |
+| `marketing@bakrie.ac.id` | `123456789` | Marketing |
+| `ga@bakrie.ac.id` | `123456789` | GA |
+| `baa@bakrie.ac.id` | `123456789` | BAA |
 
 ---
 
@@ -376,9 +376,10 @@ refactor: refactor kode
 
 **Kelompok 5 — Universitas Bakrie**  
 Mata Kuliah Rekayasa Perangkat Lunak
+
 Program Studi Teknik Informatika — 2025/2026
 
-| Nama | NIM | Role |
+| Nama | NIM |
 |---|---|---|
 | Amanda | 1232001047 | 
 | Najwa | 1232001010 | 
