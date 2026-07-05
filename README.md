@@ -1,155 +1,400 @@
-🏢 Room & Inventory Booking System (Project Kelompok 5)
-Sistem manajemen peminjaman ruangan dan inventaris kampus berbasis web. Proyek ini dirancang untuk memodernisasi proses peminjaman yang sebelumnya manual menjadi digital, meningkatkan efisiensi antara User (Peminjam) dan Admin (Pengelola), serta mendukung transparansi data ketersediaan ruangan.
+# UBakrie Space
 
-📖 Latar Belakang & Fitur Utama
-Masalah utama yang diselesaikan proyek ini adalah ketidakefisienan dalam pengecekan jadwal dan pengajuan ruangan kampus.
+[![License](https://img.shields.io/badge/license-MIT-orange.svg?style=flat-square)](LICENSE)
+[![Frontend](https://img.shields.io/badge/frontend-React%20%2B%20Vite-blue.svg?style=flat-square)](https://vitejs.dev/)
+[![Backend](https://img.shields.io/badge/backend-PHP%208.x-purple.svg?style=flat-square)](https://www.php.net/)
+[![Database](https://img.shields.io/badge/database-MySQL-orange.svg?style=flat-square)](https://www.mysql.com/)
+[![Deployed on](https://img.shields.io/badge/frontend-Netlify-00C7B7.svg?style=flat-square)](https://netlify.com/)
+[![Deployed on](https://img.shields.io/badge/backend-Railway-0B0D0E.svg?style=flat-square)](https://railway.app/)
 
-Fitur Unggulan:
+> Sistem Informasi Peminjaman Ruangan Digital — Universitas Bakrie
 
-- Digital Booking: Pengajuan peminjaman ruangan dan barang secara online.
-- Real-time Availability: Pengecekan ketersediaan ruangan (mencegah bentrok jadwal).
-- Role Management: Membedakan akses antara Mahasiswa/Staff dan Admin.
-- Priority System (Backend Ready): Logika backend telah mendukung prioritas peminjaman (VIP) khusus untuk Rektor/Petinggi kampus agar permohonan mereka diutamakan dalam antrian sistem (UI Frontend untuk fitur ini sedang dalam tahap pengembangan).
+**UBakrie Space** adalah aplikasi web berbasis arsitektur *decoupled* yang mendigitalisasi proses peminjaman ruang kelas dan inventaris di Universitas Bakrie. Sistem ini menggantikan proses manual berbasis formulir kertas dengan platform digital terpadu yang dapat diakses dari browser manapun.
 
-🛠️ Arsitektur & Alur Teknologi
-Proyek ini menggunakan arsitektur Terpisah (Decoupled) antara Frontend dan Backend untuk skalabilitas yang lebih baik. Berikut adalah teknologi yang digunakan dan fungsinya dalam ekosistem proyek ini:
-====================================================================================================================================================================
-| Teknologi 	| Kategori 	  | Fungsi & Alur Kerja 													   |
-====================================================================================================================================================================
-| React (Vite)	| Frontend 	  | Membangun antarmuka pengguna (UI) yang cepat dan responsif. Berada di folder `/client`. 					   |
-| PHP (Native) 	| Backend 	  | Menangani logika bisnis, API Endpoints, dan keamanan data. Berada di folder `/server`. 					   |
-| MySQL		| Database	  | Menyimpan data user, ruangan, dan transaksi peminjaman. 									   |
-| Git Bash	| Terminal 	  | Digunakan untuk eksekusi perintah git dan manajemen versi di lokal komputer. 						   |
-| GitHub	| Version Control | Tempat kolaborasi kode (repository) antara anggota kelompok. 								   |
-| DBeaver	| DB Tool 	  | Aplikasi GUI untuk memvisualisasikan, mengedit, dan me-manage database MySQL secara lokal maupun remote. 			   |
-| Railway	| Cloud Backend   | Layanan cloud untuk men-deploy **Backend (PHP)** dan **Database (MySQL)** agar bisa diakses internet. 			   |
-| Netlify       | Cloud Frontend  | Layanan cloud utk deploy Frontend (React). Netlify mengambil build dari React dan menghubungkannya ke API yang ada di Railway. |
-====================================================================================================================================================================
-Alur Kerja Sistem:
+🔗 **Live Demo:** [https://ubakrie-space.netlify.app](https://ubakrie-space.netlify.app)  
+🔗 **Backend API:** [https://project-kelompok-5-production.up.railway.app/api](https://project-kelompok-5-production.up.railway.app/api)
 
-1. User mengakses web via Netlify.
-2. Frontend me-request data via API ke Railway (Server PHP).
-3. Server PHP memproses request dan mengambil data dari Database (di Railway).
-4. Data dikirim balik ke Frontend untuk ditampilkan ke User.
+---
 
-📂 Struktur Proyek
-Berikut adalah struktur direktori dari proyek ini:
+## 📋 Overview
 
-Project-Kelompok-5/
-├── .git/
-├── client/                     # Frontend Application (React + Vite)
-│   ├── public/
-│   │   └── vite.svg
+UBakrie Space mendukung **5 role pengguna** dengan alur persetujuan multi-level:
+
+| Role | Deskripsi | Akses Utama |
+|---|---|---|
+| **Mahasiswa / Dosen** | Pengguna peminjam ruang | Cek ketersediaan, buat booking, lihat status, feedback |
+| **Marketing** | Validator ruang prioritas R1/R2 | Review & approve/reject booking ruang prioritas |
+| **BIMA** | Approval level 1 | Review, approve/reject, tanda tangan digital |
+| **GA** | Approval final semua permohonan | Approve/reject final, akses analytics |
+| **BAA** | Administrator & monitor operasional | Dashboard analitik, ekspor laporan |
+
+### Alur Persetujuan
+
+**Ruang biasa (non R1/R2):**
+```
+Mahasiswa/Dosen → BIMA → GA → Selesai
+```
+
+**Ruang prioritas (R1/R2):**
+```
+Mahasiswa/Dosen → Marketing → BIMA → GA → Selesai
+```
+
+### Fitur Utama
+
+- 🔐 **Autentikasi & RBAC** — Login berbasis role, redirect otomatis ke dashboard sesuai role
+- 🏫 **Cek Ketersediaan Ruang** — Real-time availability check sebelum booking
+- 📝 **Form Booking** — Pengajuan peminjaman lengkap dengan upload memo
+- 🔄 **Recurring Booking** — Peminjaman berulang mingguan/bulanan dalam satu pengajuan (atomic transaction)
+- ✅ **Multi-Level Approval Workflow** — Alur persetujuan bertingkat dengan notifikasi
+- 📊 **Dashboard Analitik** — Bar chart booking per ruangan, filter periode, export CSV/PDF
+- 📈 **Pola Penggunaan Ruangan** — Analisis hari & jam tersibuk per ruangan
+
+---
+
+## 🏗️ System Architecture
+
+```
+┌─────────────────────────────────────────────────┐
+│              PRESENTATION LAYER                  │
+│         React + Vite + Tailwind CSS              │
+│              (Netlify CDN)                       │
+└──────────────────────┬──────────────────────────┘
+                       │ HTTP REST API (JSON)
+                       │ + CORS Header
+┌──────────────────────▼──────────────────────────┐
+│            BUSINESS LOGIC LAYER                  │
+│            PHP Native 8.x (REST API)            │
+│               (Railway Cloud)                    │
+└──────────────────────┬──────────────────────────┘
+                       │ PDO + Prepared Statement
+┌──────────────────────▼──────────────────────────┐
+│                 DATA LAYER                       │
+│             MySQL Relational DB                  │
+│               (Railway Cloud)                    │
+└─────────────────────────────────────────────────┘
+```
+
+### Tech Stack
+
+| Layer | Teknologi | Hosting |
+|---|---|---|
+| Frontend | React 18 + Vite + Tailwind CSS | Netlify |
+| Backend | PHP 8.x Native (REST API) | Railway |
+| Database | MySQL 8.x | Railway |
+| PDF Export | jsPDF + jsPDF-AutoTable | (client-side) |
+
+---
+
+## 🗄️ Database Design
+
+### Entitas Utama (8 Tabel)
+
+```
+users ──────┬──── booking ────┬──── booking_rooms ──── rooms
+            │                 ├──── booking_approval
+            │                 ├──── booking_feedback
+            │                 ├──── booking_inventory ── inventory
+            │                 └──── booking_recurrence_rule
+            └──── notifications
+```
+
+### Views Analytics
+
+| View | Deskripsi |
+|---|---|
+| `vw_booking_report` | Laporan lengkap booking dengan join semua tabel |
+| `vw_room_utilization_monthly` | Agregat pemakaian ruang per bulan (approved only) |
+| `vw_my_booking_history` | Riwayat booking per user dengan status approval terakhir |
+| `vw_room_popularity` | Pola penggunaan ruang per hari dan jam |
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+Pastikan sudah terinstall:
+
+- [Node.js](https://nodejs.org/) v18+
+- [npm](https://www.npmjs.com/) v9+
+- [PHP](https://www.php.net/) 8.x
+- [MySQL](https://www.mysql.com/) 8.x atau [XAMPP](https://www.apachefriends.org/)
+- [Git](https://git-scm.com/)
+
+### Installing
+
+**1. Clone repository**
+
+```bash
+git clone https://github.com/ottodaniswaralol/project-kelompok-5.git
+cd project-kelompok-5
+```
+
+**2. Setup Frontend**
+
+```bash
+cd client
+npm install
+```
+
+Buat file `.env` di folder `client/`:
+
+```env
+VITE_API_URL=https://project-kelompok-5-production.up.railway.app/api
+```
+
+Jalankan development server:
+
+```bash
+npm run dev
+```
+
+Frontend akan berjalan di `http://localhost:5173`
+
+**3. Setup Backend**
+
+Letakkan folder `server/` di dalam `htdocs/` (XAMPP) atau web server PHP kamu.
+
+Buat file koneksi database di `server/config/database.php`:
+
+```php
+<?php
+$host = getenv('MYSQLHOST') ?: "localhost";
+$user = getenv('MYSQLUSER') ?: "root";
+$pass = getenv('MYSQLPASSWORD') ?: "";
+$db   = getenv('MYSQLDATABASE') ?: "room_booking";
+$port = getenv('MYSQLPORT') ?: "3306";
+
+$conn = mysqli_connect($host, $user, $pass, $db, $port);
+
+if (!$conn) {
+    http_response_code(500);
+    echo json_encode(["status" => false, "message" => "Database Connection Error"]);
+    exit;
+}
+
+mysqli_set_charset($conn, "utf8mb4");
+?>
+```
+
+**4. Setup Database**
+
+Import file SQL ke MySQL:
+
+```bash
+mysql -u root -p room_booking < database/room_booking_final_v2.sql
+```
+
+Atau buka file `database/room_booking_final_v2.sql` di DBeaver/phpMyAdmin dan execute.
+
+---
+
+## 📁 Project Structure
+
+```
+project-kelompok-5/
+├── client/                      # Frontend React
 │   ├── src/
-│   │   ├── assets/
-│   │   │   └── react.svg
-│   │   ├── pages/
-│   │   │   └── Login.jsx       # Halaman Login
+│   │   ├── App.jsx              # Main component + routing
 │   │   ├── services/
-│   │   │   └── api.js          # Konfigurasi Axios/Fetch ke Backend
-│   │   ├── app.css
-│   │   ├── app.jsx
-│   │   ├── index.css
+│   │   │   └── api.js           # API service layer
 │   │   └── main.jsx
-│   ├── .DS_Store
-│   ├── .gitignore
-│   ├── eslint.config.js
-│   ├── index.html
-│   ├── package-lock.json
+│   ├── public/
+│   │   └── favicon.svg
 │   ├── package.json
-│   ├── postcss.config.js
-│   ├── README.md
-│   ├── tailwind.config.js      # Konfigurasi Styling
-│   └── vite.config.js          # Konfigurasi Build Tool
-├── database/
-│   └── room_booking.sql        # File Import Database
-├── server/                     # Backend Application (PHP API)
-│   ├── api/                    # API Endpoints
-│   │   ├── approval/
-│   │   │   ├── list.php
-│   │   │   └── reject.php
+│   └── vite.config.js
+│
+├── server/                      # Backend PHP
+│   ├── api/
 │   │   ├── auth/
-│   │   │   ├── cors.php        # Handle Cross-Origin Resource Sharing
-│   │   │   ├── login.php
-│   │   │   └── register.php
+│   │   │   ├── login.php        # POST - Login user
+│   │   │   └── logout.php
 │   │   ├── booking/
-│   │   │   ├── cek_data.php
-│   │   │   ├── check_availability.php
-│   │   │   ├── create.php
-│   │   │   ├── delete.php
-│   │   │   ├── detail.php
-│   │   │   └── list.php
+│   │   │   ├── create.php       # POST - Buat booking biasa
+│   │   │   ├── create_recurring.php  # POST - Buat recurring booking
+│   │   │   ├── check_availability.php  # GET - Cek ketersediaan ruang
+│   │   │   ├── list.php         # GET - List booking per user
+│   │   │   ├── all.php          # GET - Semua booking (admin)
+│   │   │   ├── detail.php       # GET - Detail booking
+│   │   │   └── delete.php       # POST - Hapus/batalkan booking
+│   │   ├── approval/
+│   │   │   ├── list.php         # GET - List approval per role
+│   │   │   ├── approve.php      # POST - Setujui booking
+│   │   │   └── reject.php       # POST - Tolak booking
+│   │   ├── rooms/
+│   │   │   └── list.php         # GET - List semua ruangan
 │   │   ├── feedback/
-│   │   │   └── submit.php
-│   │   ├── inventory/
-│   │   │   └── list.php
-│   │   └── rooms/
-│   │       └── list.php
-│   ├── config/
-│   │   └── database.php        # Koneksi Database (PDO/MySQLi)
-│   ├── uploads/
-│   │   └── memos/              # Folder penyimpanan bukti/memo (Empty initially)
-│   ├── composer.json           # Dependencies Backend (jika pakai library tambahan)
-│   ├── index.php               # Entry point (Opsional/Routing)
-│   └── test.php
-├── test.db.php                 # File testing koneksi database root
-└── README.md                   # Dokumentasi Proyek
+│   │   │   └── submit.php       # POST - Submit feedback
+│   │   └── reports/
+│   │       ├── analytics.php    # GET - Data analytics dashboard
+│   │       └── export.php       # GET - Export CSV/PDF
+│   └── config/
+│       └── database.php         # Konfigurasi koneksi database
+│
+└── database/
+    └── room_booking_final_v2.sql  # Full database schema + seed data
+```
 
-🚀 Instalasi & Cara Menjalankan (Local Development)
-Ikuti langkah ini untuk menjalankan proyek di komputer lokal (Localhost).
+---
 
-1. Persiapan Database
-  - Pastikan XAMPP/Laragon (MySQL) sudah berjalan.
-  - Buka DBeaver atau phpMyAdmin.
-  - Buat database baru dengan nama room_booking (atau sesuaikan dengan config).
-  - Import file database/room_booking.sql ke dalam database yang baru dibuat.
+## 🔌 API Endpoints
 
-2. Setup Backend (Server)
-Karena ini memisahkan frontend dan backend, kita perlu menjalankan server PHP secara independen atau melalui XAMPP.
+| Method | Endpoint | Deskripsi | Role |
+|---|---|---|---|
+| POST | `/api/auth/login.php` | Login user | Public |
+| GET | `/api/rooms/list.php` | List semua ruangan | Semua |
+| GET | `/api/booking/check_availability.php` | Cek ketersediaan ruang | Mahasiswa, Dosen |
+| POST | `/api/booking/create.php` | Buat booking biasa | Mahasiswa, Dosen |
+| POST | `/api/booking/create_recurring.php` | Buat recurring booking | Mahasiswa, Dosen |
+| GET | `/api/booking/list.php` | List booking per user | Mahasiswa, Dosen |
+| GET | `/api/booking/all.php` | Semua booking | BAA, GA |
+| POST | `/api/booking/delete.php` | Batalkan booking | Mahasiswa, Dosen |
+| GET | `/api/approval/list.php` | List antrean approval | Marketing, BIMA, GA |
+| POST | `/api/approval/approve.php` | Setujui booking | Marketing, BIMA, GA |
+| POST | `/api/approval/reject.php` | Tolak booking | Marketing, BIMA, GA |
+| POST | `/api/feedback/submit.php` | Submit feedback | Mahasiswa, Dosen |
+| GET | `/api/reports/analytics.php` | Data analytics | BAA, GA |
+| GET | `/api/reports/export.php` | Export CSV/PDF | BAA, GA |
 
-  - Opsi A (Menggunakan PHP Built-in Server - Recommended):
-    1. Buka terminal (Git Bash/CMD), arahkan ke folder server.
-    2. Jalankan perintah:
-       cd server
-       php -S localhost:8000
-    3. Backend sekarang berjalan di http://localhost:8000.
+---
 
-  - Konfigurasi Koneksi:
-    - Buka file server/config/database.php.
-    - Pastikan kredensial DB sesuai (Host: localhost, User: root, Pass: [kosong], DB: room_booking).
+## 🧪 Tests
 
-3. Setup Frontend (Client)
-Pastikan Node.js sudah terinstall di komputer.
+### Testing Manual via Postman
 
-   1. Buka terminal baru (jangan matikan terminal Backend).
-   2. Masuk ke folder client:
-      cd client
-   3. Install dependencies (Wajib dilakukan pertama kali):
-      npm install
-   4. Jalankan mode development:
-      npm run dev
-   5. Aplikasi akan berjalan (biasanya di http://localhost:5173). Buka link tersebut di browser.
+Import collection Postman dan test endpoint satu per satu:
 
-Catatan Penting: Pastikan konfigurasi URL API di client/src/services/api.js mengarah ke alamat backend lokal kamu (misal: http://localhost:8000/api/).
+**Login:**
+```json
+POST /api/auth/login.php
+{
+  "username": "Otto@student.bakrie.ac.id",
+  "password": "password123"
+}
+```
 
-📡 Dokumentasi API (Endpoints)
-Backend menyediakan endpoint berikut untuk dikonsumsi oleh Frontend:
-Auth:
-POST /api/auth/login.php - Autentikasi user
-POST /api/auth/register.php - Pendaftaran user baru
+**Recurring Booking:**
+```json
+POST /api/booking/create_recurring.php
+{
+  "user_id": 5,
+  "room_id": 7,
+  "event_name": "Rapat Rutin",
+  "organization": "Kelompok 5",
+  "day_of_week": 2,
+  "start_date": "2026-07-01",
+  "end_date": "2026-07-31",
+  "start_time": "09:00",
+  "end_time": "11:00",
+  "frequency": "weekly",
+  "interval_count": 1
+}
+```
 
-Booking (Peminjaman):
-GET /api/booking/list.php - Melihat daftar peminjaman
-POST /api/booking/create.php - Membuat peminjaman baru
-GET /api/booking/check_availability.php - Cek ketersediaan ruangan
+**Analytics:**
+```
+GET /api/reports/analytics.php?month=7&year=2026
+```
 
-Rooms & Inventory:
+### Test Accounts
 
-GET /api/rooms/list.php - List semua ruangan
-GET /api/inventory/list.php - List inventaris
+| Email | Password | Role |
+|---|---|---|
+| `Otto@student.bakrie.ac.id` | `password123` | Mahasiswa |
+| `budi@bakrie.ac.id` | `password123` | Dosen |
+| `bima@bakrie.ac.id` | `password123` | BIMA |
+| `marketing@bakrie.ac.id` | `password123` | Marketing |
+| `ga@bakrie.ac.id` | `password123` | GA |
+| `baa@bakrie.ac.id` | `password123` | BAA |
 
-Approval (Admin):
-PUT/POST /api/approval/reject.php - Menolak peminjaman
+---
 
+## ☁️ Deployment
 
---------------------------------------Dibuat untuk memenuhi tugas akhir mata kuliah E-Bussiness and Web Based Programming----------------------------------------------
+### Frontend — Netlify
+
+1. Push kode ke GitHub
+2. Connect repo ke Netlify
+3. Set build settings:
+   - **Base directory:** `client`
+   - **Build command:** `npm run build`
+   - **Publish directory:** `client/dist`
+4. Tambahkan environment variable `VITE_API_URL`
+5. Deploy otomatis setiap push ke branch `main`
+
+### Backend — Railway
+
+1. Buat project baru di Railway
+2. Connect ke GitHub repo
+3. Set root directory ke `server/`
+4. Tambahkan MySQL service
+5. Railway otomatis inject environment variables database:
+   - `MYSQLHOST`, `MYSQLUSER`, `MYSQLPASSWORD`, `MYSQLDATABASE`, `MYSQLPORT`
+
+---
+
+## 👥 Contributing
+
+1. Fork repository ini
+2. Buat branch baru: `git checkout -b feature/nama-fitur`
+3. Commit perubahan: `git commit -m 'feat: tambah fitur X'`
+4. Push ke branch: `git push origin feature/nama-fitur`
+5. Buat Pull Request
+
+### Commit Convention
+
+```
+feat: tambah fitur baru
+fix: perbaiki bug
+docs: update dokumentasi
+style: perubahan styling
+refactor: refactor kode
+```
+
+---
+
+## 📝 Release History
+
+- **v1.1** *(Juli 2026)*
+  - Tambah fitur Recurring Booking (atomic transaction)
+  - Tambah Dashboard Analitik BAA/GA (bar chart, export CSV/PDF)
+  - Tambah pola penggunaan ruangan (Top 10)
+  - Role-based routing otomatis setelah login
+  - Halaman pilihan dashboard untuk role GA
+
+- **v1.0** *(Juni 2026)*
+  - Autentikasi & RBAC (5 role)
+  - Form booking dengan cek ketersediaan ruang
+  - Multi-level approval workflow (Marketing → BIMA → GA)
+  - Status pengajuan real-time
+  - Sistem feedback (rating 1-5)
+
+---
+
+## 👨‍💻 Authors
+
+**Kelompok 5 — Universitas Bakrie**  
+Mata Kuliah Rekayasa Perangkat Lunak
+Program Studi Teknik Informatika — 2025/2026
+
+| Nama | NIM | Role |
+|---|---|---|
+| Amanda | 1232001047 | 
+| Najwa | 1232001010 | 
+| Ivan | 1232001036 | 
+| Fadil | 1232001049 |
+| Otto Daniswara | 1232001040 |
+| Nofita | 1222001019 |
+
+---
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+---
+
+<p align="center">
+  Made with ❤️ by Kelompok 5 — Universitas Bakrie 2026
+</p>
