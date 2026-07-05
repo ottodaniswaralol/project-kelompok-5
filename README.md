@@ -348,14 +348,14 @@ refactor: refactor kode
 
 ## 📝 Release History
 
-- **v1.1** *(Juli 2026)*
+- **v2.0** *(Juli 2026)*
   - Tambah fitur Recurring Booking (atomic transaction)
   - Tambah Dashboard Analitik BAA/GA (bar chart, export CSV/PDF)
   - Tambah pola penggunaan ruangan (Top 10)
   - Role-based routing otomatis setelah login
   - Halaman pilihan dashboard untuk role GA
 
-- **v1.0** *(Juni 2026)*
+- **v1.0** *(Januari 2026)*
   - Autentikasi & RBAC (5 role)
   - Form booking dengan cek ketersediaan ruang
   - Multi-level approval workflow (Marketing → BIMA → GA)
