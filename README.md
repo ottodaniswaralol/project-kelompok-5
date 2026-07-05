@@ -379,7 +379,7 @@ Mata Kuliah Rekayasa Perangkat Lunak
 
 Program Studi Teknik Informatika — 2025/2026
 
-| Nama | NIM |
+| Nama | NIM |  
 |---|---|---|
 | Amanda | 1232001047 | 
 | Najwa | 1232001010 | 
