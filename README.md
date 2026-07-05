@@ -11,7 +11,7 @@
 
 **UBakrie Space** adalah aplikasi web berbasis arsitektur *decoupled* yang mendigitalisasi proses peminjaman ruang kelas dan inventaris di Universitas Bakrie. Sistem ini menggantikan proses manual berbasis formulir kertas dengan platform digital terpadu yang dapat diakses dari browser manapun.
 
-🔗 **Live Demo:** [https://ubakrie-space.netlify.app](https://ubakrie-space.netlify.app)  
+🔗 **Live Demo:** [https://room-booking-group-5.netlify.app](https://room-booking-group-5.netlify.app)  
 🔗 **Backend API:** [https://project-kelompok-5-production.up.railway.app/api](https://project-kelompok-5-production.up.railway.app/api)
 
 ---
